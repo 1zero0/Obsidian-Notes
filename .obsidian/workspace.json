@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Home.md",
+                "file": "学习/剧本杀/如何写一个剧本杀/如何写作.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Home"
+              "title": "如何写作"
             }
           }
         ]
@@ -237,6 +237,7 @@
   "active": "11590725876730e4",
   "lastOpenFiles": [
     "Home.md",
+    "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "学习/剧本杀/如何写一个剧本杀/学习链接.md",
     "学习",
     "日常",
