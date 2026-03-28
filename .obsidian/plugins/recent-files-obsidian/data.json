@@ -1,8 +1,12 @@
 {
   "recentFiles": [
     {
+      "basename": "Home",
+      "path": "Home.md"
+    },
+    {
       "basename": "学习链接",
-      "path": "剧本杀/如何写一个剧本杀/学习链接.md"
+      "path": "学习/剧本杀/如何写一个剧本杀/学习链接.md"
     },
     {
       "basename": "收集的句子",
@@ -18,7 +22,7 @@
     },
     {
       "basename": "第一千零八十章——我一直……都挺笨的。",
-      "path": "小说/小说章节/第一千零八十章——我一直……都挺笨的。.md"
+      "path": "工作/小说/小说章节/第一千零八十章——我一直……都挺笨的。.md"
     },
     {
       "basename": "面试问题",
@@ -26,23 +30,23 @@
     },
     {
       "basename": "callout语法用法",
-      "path": "笔记/callout/callout语法用法.md"
+      "path": "日常/笔记/callout/callout语法用法.md"
     },
     {
       "basename": "插件用法",
-      "path": "插件用法/插件用法/插件用法.md"
+      "path": "学习/插件用法/插件用法/插件用法.md"
     },
     {
       "basename": "第一千零八十一章——",
-      "path": "小说/小说章节/第一千零八十一章——.md"
+      "path": "工作/小说/小说章节/第一千零八十一章——.md"
     },
     {
       "basename": "会议",
-      "path": "第四领域/会议.md"
+      "path": "工作/第四领域/会议.md"
     },
     {
       "basename": "末日大逃杀Demo建议",
-      "path": "千星奇遇/末日大逃杀/末日大逃杀Demo建议.md"
+      "path": "工作/千星奇遇/末日大逃杀/末日大逃杀Demo建议.md"
     }
   ],
   "omittedPaths": [],
