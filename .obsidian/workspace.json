@@ -11,10 +11,14 @@
             "id": "71391b84425a738a",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {},
+              "type": "markdown",
+              "state": {
+                "file": "剧本杀/如何写一个剧本杀/学习链接.md",
+                "mode": "source",
+                "source": false
+              },
               "icon": "lucide-file",
-              "title": "新标签页"
+              "title": "学习链接"
             }
           }
         ]
@@ -229,8 +233,9 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "cc8d023c78fc29df",
+  "active": "71391b84425a738a",
   "lastOpenFiles": [
+    "剧本杀/如何写一个剧本杀/学习链接.md",
     "剧本杀/22周",
     "剧本杀/如何写一个剧本杀",
     "剧本杀",
@@ -264,7 +269,6 @@
     "插件用法/人物性格编写/爱弥斯.md",
     "小说/小说相关信息/轮回要事/伏笔.md",
     "插件用法/插件用法",
-    "插件用法/人物性格编写",
     "小说/小说相关信息/怪物.md",
     "小说/小说章节/第一千零五十六章——你们一起才能做到！.md",
     "小说/小说章节/第一千零五十章——没有你的胜利……不算是胜利.md",
