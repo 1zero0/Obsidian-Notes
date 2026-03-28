@@ -1,0 +1,12 @@
+{
+  "interfaceFontFamily": "JetBrains Mono",
+  "textFontFamily": "JetBrains Mono",
+  "monospaceFontFamily": "JetBrains Mono",
+  "cssTheme": "Blue Topaz",
+  "theme": "moonstone",
+  "enabledCssSnippets": [
+    "snippets"
+  ],
+  "baseFontSize": 16,
+  "accentColor": ""
+}

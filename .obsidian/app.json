@@ -1,0 +1,8 @@
+{
+  "trashOption": "none",
+  "useMarkdownLinks": true,
+  "newLinkFormat": "absolute",
+  "attachmentFolderPath": "./photo",
+  "promptDelete": false,
+  "alwaysUpdateLinks": true
+}
