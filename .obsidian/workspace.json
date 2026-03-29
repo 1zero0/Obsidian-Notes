@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "28cb3e12753913f7",
+        "id": "9d8c15ab1f995a77",
         "type": "tabs",
         "children": [
           {
-            "id": "11590725876730e4",
+            "id": "bcd947edc7dfc878",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "学习/剧本杀/如何写一个剧本杀/学习链接.md",
+                "file": "Home.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "学习链接"
+              "title": "Home"
             }
           }
         ]
@@ -234,11 +234,11 @@
       "homepage:Open homepage": false
     }
   },
-  "active": "11590725876730e4",
+  "active": "bcd947edc7dfc878",
   "lastOpenFiles": [
+    "学习/剧本杀/如何写一个剧本杀/学习链接.md",
     "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "Home.md",
-    "学习/剧本杀/如何写一个剧本杀/学习链接.md",
     "学习",
     "日常",
     "游戏",
