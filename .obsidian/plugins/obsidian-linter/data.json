@@ -280,7 +280,8 @@
   "settingsConvertedToConfigKeyValues": true,
   "foldersToIgnore": [
     "备忘录",
-    "工作"
+    "工作",
+    "学习/剧本杀/22周"
   ],
   "filesToIgnore": [],
   "linterLocale": "system-default",
