@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "aada11b53ef841a9",
+        "id": "d2a11b8096562099",
         "type": "tabs",
         "children": [
           {
-            "id": "ac7c41b79b7c0c49",
+            "id": "04eb6c09cf29381f",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "学习/剧本杀/如何写一个剧本杀/如何写作.md",
+                "file": "Home.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "如何写作"
+              "title": "Home"
             }
           }
         ]
@@ -234,8 +234,9 @@
       "homepage:Open homepage": false
     }
   },
-  "active": "cc8d023c78fc29df",
+  "active": "04eb6c09cf29381f",
   "lastOpenFiles": [
+    "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "Home.md",
     "工作/小说/小说章节/第一千零八十二章——.md",
     "工作/小说/小说章节/第一千零八十一章——大表彰！.md",
@@ -246,7 +247,6 @@
     "学习/Obsidian/Dataview使用.md",
     "学习/Obsidian",
     "学习/剧本杀/如何写一个剧本杀/学习链接.md",
-    "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "学习",
     "日常",
     "游戏",
