@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Home.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
@@ -236,9 +236,9 @@
   },
   "active": "aa3e3b0cd34ade8b",
   "lastOpenFiles": [
+    "homepage.md",
     "Home.md",
     "灵感/突发的灵感（fps）篇.md",
-    "homepage.md",
     "备忘录/面试问题.md",
     "二十二周.md",
     "工作/小说/小说章节/第一千零八十三章——法杖能不能互用？.md",
