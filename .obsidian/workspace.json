@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Home.md",
+                "file": "homepage.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Home"
+              "title": "homepage"
             }
           }
         ]
@@ -236,8 +236,12 @@
   },
   "active": "fc197e2cb1c05cc5",
   "lastOpenFiles": [
-    "工作/小说/小说章节/第一千零八十四章——.md",
+    "二十二周.md",
+    "homepage.md",
     "工作/小说/小说章节/第一千零八十三章——法杖能不能互用？.md",
+    "工作/小说/小说章节/第一千零八十四章——.md",
+    "日常手记.md",
+    "heatmap.md",
     "Home.md",
     "工作/小说/小说相关信息/魔骑对决的路线.md",
     "随笔/收集的句子.md",
@@ -269,10 +273,6 @@
     "工作/小说/小说相关信息/小说一些重大事件.md",
     "Excalidraw/Drawing 2026-03-19 15.40.19.excalidraw.md",
     "Excalidraw/未命名.canvas",
-    "学习/插件用法/人物性格编写/星澜一.md",
-    "学习/插件用法/人物性格编写/爱莉希雅.md",
-    "学习/插件用法/人物性格编写/通用.md",
-    "学习/插件用法/人物性格编写/爱弥斯.md",
     "工作/第四领域/游玩指南/photo/Pasted image 20251030143614.png",
     "未命名.canvas"
   ]
