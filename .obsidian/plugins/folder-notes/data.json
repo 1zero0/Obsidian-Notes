@@ -6,7 +6,7 @@
   "templatePath": "",
   "autoCreate": true,
   "autoCreateFocusFiles": false,
-  "autoCreateForAttachmentFolder": false,
+  "autoCreateForAttachmentFolder": true,
   "autoCreateForFiles": false,
   "enableCollapsing": false,
   "excludeFolders": [],
