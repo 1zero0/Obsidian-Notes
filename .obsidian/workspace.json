@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "dd36d253f9ecf452",
+        "id": "d1b02acbd3d46961",
         "type": "tabs",
         "children": [
           {
-            "id": "0b12f982b2980ac3",
+            "id": "d3ce43f60cde612e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Home.md",
+                "file": "工作/小说/小说章节/第一千零八十四章——.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Home"
+              "title": "第一千零八十四章——"
             }
           }
         ]
@@ -234,12 +234,12 @@
       "homepage:Open homepage": false
     }
   },
-  "active": "0b12f982b2980ac3",
+  "active": "d3ce43f60cde612e",
   "lastOpenFiles": [
-    "工作/小说/小说章节/第一千零八十四章——.md",
     "工作/小说/小说章节/第一千零八十三章——法杖能不能互用？.md",
-    "工作/小说/小说相关信息/魔骑对决的路线.md",
     "Home.md",
+    "工作/小说/小说章节/第一千零八十四章——.md",
+    "工作/小说/小说相关信息/魔骑对决的路线.md",
     "随笔/收集的句子.md",
     "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "日常/诗/李白/经乱离后天恩流夜郎忆旧游书怀赠江夏韦太守良宰.md",
