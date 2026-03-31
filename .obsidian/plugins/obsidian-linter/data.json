@@ -283,7 +283,13 @@
     "工作",
     "学习/剧本杀/22周"
   ],
-  "filesToIgnore": [],
+  "filesToIgnore": [
+    {
+      "match": "^Home\\.md$",
+      "flags": "",
+      "label": ""
+    }
+  ],
   "linterLocale": "system-default",
   "logLevel": "ERROR",
   "lintCommands": [],
