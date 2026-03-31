@@ -1,0 +1,57 @@
+{
+  "ui": {
+    "indentSize": 30,
+    "showBullets": true,
+    "showCollapseIndicators": true,
+    "showVerticalLines": true,
+    "animationsEnabled": false,
+    "theme": "warm-beige",
+    "fontSize": 19,
+    "lineHeight": 1.9,
+    "bulletAlign": "top",
+    "fontFamily": "theme",
+    "customFontFamily": "",
+    "zoomLevel": 1
+  },
+  "editor": {
+    "autoSave": true,
+    "autoSaveDelay": 1000,
+    "placeholder": "输入内容...",
+    "renderMode": "source",
+    "attachmentPath": "default",
+    "customAttachmentPath": ""
+  },
+  "features": {
+    "slashCommand": true,
+    "tagSuggest": true,
+    "linkSuggest": true,
+    "crossDocumentDrag": true,
+    "autoBlockId": true,
+    "mobileToolbar": true
+  },
+  "search": {
+    "mode": "filter",
+    "caseSensitive": false,
+    "autoExpandMatches": true
+  },
+  "dragDrop": {
+    "enabled": true,
+    "showDropIndicators": true,
+    "allowNestedDrop": true
+  },
+  "isolation": {
+    "strictMode": true,
+    "enableAssertions": false,
+    "debugMode": false,
+    "healthCheckInterval": 30000
+  },
+  "collapseState": {
+    "enabled": true,
+    "marker": "c"
+  },
+  "thino": {
+    "enabled": true,
+    "timestampFormat": "HH:mm:ss",
+    "autoTimestamp": false
+  }
+}
