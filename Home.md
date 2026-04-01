@@ -1,6 +1,6 @@
 ### 📁 导航
 - **主要文件**
-   - [[小说]]
+   - [[小说]] 
    - [黑塔要点](游戏/饥荒人物MOD/黑塔要点.md)
 - **快捷入口**
    - [Home](Home.md)
@@ -8,6 +8,7 @@
    - [第一千零八十四章——我一直在等他回来……](工作/小说/小说章节/第一千零八十四章——我一直在等他回来…….md)
    - [第一千零八十五章——](工作/小说/小说章节/第一千零八十五章——.md)
    - [Obsidian插件链接](学习/Obsidian/Obsidian插件链接.md)
+
 
 
 `=dateformat(date("today"),"DD")`，`=date(today).year` 年已过去 `=(date(today)-date(date(today).year + "-01-01")).days` 天
