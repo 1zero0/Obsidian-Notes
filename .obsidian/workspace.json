@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "6dbe5fc31b6979ac",
+        "id": "43dbf1ddf2ead7d0",
         "type": "tabs",
         "children": [
           {
-            "id": "ec114c2d04b0b243",
+            "id": "01da58d70867138c",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -22,7 +22,7 @@
             }
           },
           {
-            "id": "f573a88698de53df",
+            "id": "42a0360a621155a3",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -35,7 +35,8 @@
               "title": "第一千零八十七章——我们能为林雀做什么？"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -249,11 +250,11 @@
       "obsidian42-brat:BRAT": false
     }
   },
-  "active": "ec114c2d04b0b243",
+  "active": "42a0360a621155a3",
   "lastOpenFiles": [
-    "工作/小说/小说章节/第一千零八十七章——我们能为林雀做什么？.md",
     "工作/小说/小说章节/第一千零八十八章——.md",
     "Home.md",
+    "工作/小说/小说章节/第一千零八十七章——我们能为林雀做什么？.md",
     "工作/千星奇遇/末日大逃杀/后续开发计划.md",
     "工作/小说/小说相关信息/魔骑对决的路线.md",
     "工作/小说/小说相关信息/小说的后续剧情.md",
