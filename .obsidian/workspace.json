@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "5a385c14fe83e45d",
+        "id": "44f42e45c24b721d",
         "type": "tabs",
         "children": [
           {
-            "id": "3b3c215e097e8dda",
+            "id": "820186878842dbfe",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -22,7 +22,7 @@
             }
           },
           {
-            "id": "e8e247409a97dc80",
+            "id": "517d19bff66c529b",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -249,7 +249,7 @@
       "obsidian42-brat:BRAT": false
     }
   },
-  "active": "3b3c215e097e8dda",
+  "active": "820186878842dbfe",
   "lastOpenFiles": [
     "工作/小说/小说章节/第一千零八十七章——我们能为林雀做什么？.md",
     "工作/小说/小说章节/第一千零八十八章——.md",
