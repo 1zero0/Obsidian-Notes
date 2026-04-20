@@ -11,6 +11,5 @@
 
 
 
-
 `=dateformat(date("today"),"DD")`，`=date(today).year` 年已过去 `=(date(today)-date(date(today).year + "-01-01")).days` 天
 今年你在 `$=dv.pages('"日常手记"').file.length` 天留下足迹，继续加油！💪
