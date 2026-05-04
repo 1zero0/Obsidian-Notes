@@ -4,39 +4,24 @@
     "type": "split",
     "children": [
       {
-        "id": "1d733dfda9ce89f7",
+        "id": "b9b4036fe71659d0",
         "type": "tabs",
         "children": [
           {
-            "id": "39c3bbf1825017e3",
+            "id": "47570af869308a3e",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "工作/小说/小说章节/第一千零一百零六章——既定的未来…….md",
+                "file": "Home.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "第一千零一百零六章——既定的未来……"
-            }
-          },
-          {
-            "id": "ec950475c77b474f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "工作/小说/小说章节/第一千零一百零七章——.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "第一千零一百零七章——"
+              "title": "Home"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -250,10 +235,10 @@
       "obsidian42-brat:BRAT": false
     }
   },
-  "active": "ec950475c77b474f",
+  "active": "47570af869308a3e",
   "lastOpenFiles": [
-    "工作/小说/小说章节/第一千零一百零六章——既定的未来…….md",
     "工作/小说/小说章节/第一千零一百零七章——.md",
+    "工作/小说/小说章节/第一千零一百零六章——既定的未来…….md",
     "Home.md",
     "工作/小说/小说相关信息/小说重要内容（重要剧情和人物等）.md",
     "工作/小说/小说相关信息/一些小说需要的重要信息.md",
