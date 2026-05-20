@@ -3804,6 +3804,347 @@
     display: block;
 }
 
+/* 表格样式 - 支持 Live Preview 模式下的 Markdown 表格渲染 */
+.workflowy-content-display table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.5em 0;
+    display: table;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.workflowy-content-display thead {
+    background-color: var(--table-header-background);
+    border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.workflowy-content-display th {
+    padding: 6px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-normal);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.workflowy-content-display td {
+    padding: 6px 12px;
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+}
+
+.workflowy-content-display tbody tr:nth-child(even) {
+    background-color: var(--table-row-even-background);
+}
+
+.workflowy-content-display tbody tr:hover {
+    background-color: var(--table-row-hover-background);
+}
+
+/* 表格内的文本对齐 */
+.workflowy-content-display th[align="left"],
+.workflowy-content-display td[align="left"] {
+    text-align: left;
+}
+
+.workflowy-content-display th[align="center"],
+.workflowy-content-display td[align="center"] {
+    text-align: center;
+}
+
+.workflowy-content-display th[align="right"],
+.workflowy-content-display td[align="right"] {
+    text-align: right;
+}
+
+/* ==================== 主题特定的表格样式 ==================== */
+
+/* 主题 1: 默认（跟随 Obsidian） - 使用 Obsidian 原生变量 */
+.workflowy-container.workflowy-theme-default .workflowy-content-display table {
+    /* 使用 Obsidian 原生变量，带 fallback */
+    border-color: var(--background-modifier-border, rgba(0, 0, 0, 0.1));
+}
+
+.workflowy-container.workflowy-theme-default .workflowy-content-display thead {
+    background-color: var(--table-header-background, rgba(0, 0, 0, 0.05));
+    border-bottom-color: var(--background-modifier-border, rgba(0, 0, 0, 0.1));
+}
+
+.workflowy-container.workflowy-theme-default .workflowy-content-display th,
+.workflowy-container.workflowy-theme-default .workflowy-content-display td {
+    border-color: var(--background-modifier-border, rgba(0, 0, 0, 0.1));
+    color: var(--text-normal);
+}
+
+.workflowy-container.workflowy-theme-default .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: var(--table-row-even-background, rgba(0, 0, 0, 0.02));
+}
+
+.workflowy-container.workflowy-theme-default .workflowy-content-display tbody tr:hover {
+    background-color: var(--table-row-hover-background, rgba(0, 0, 0, 0.04));
+}
+
+/* 主题 2: 经典白 */
+.workflowy-container.workflowy-theme-classic-white .workflowy-content-display thead {
+    background-color: #f5f5f5;
+    border-bottom-color: #ecf0f1;
+}
+
+.workflowy-container.workflowy-theme-classic-white .workflowy-content-display th,
+.workflowy-container.workflowy-theme-classic-white .workflowy-content-display td {
+    border-color: #ecf0f1;
+    color: #2c3e50;
+}
+
+.workflowy-container.workflowy-theme-classic-white .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.workflowy-container.workflowy-theme-classic-white .workflowy-content-display tbody tr:hover {
+    background-color: #e8f4f8;
+}
+
+/* 主题 3: 暗夜橙绿 */
+.workflowy-container.workflowy-theme-dark-orange-green .workflowy-content-display thead {
+    background-color: #1a1a1a;
+    border-bottom-color: #2a2a2a;
+}
+
+.workflowy-container.workflowy-theme-dark-orange-green .workflowy-content-display th,
+.workflowy-container.workflowy-theme-dark-orange-green .workflowy-content-display td {
+    border-color: #2a2a2a;
+    color: #ff9500;
+}
+
+.workflowy-container.workflowy-theme-dark-orange-green .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(255, 149, 0, 0.05);
+}
+
+.workflowy-container.workflowy-theme-dark-orange-green .workflowy-content-display tbody tr:hover {
+    background-color: rgba(255, 149, 0, 0.1);
+}
+
+/* 主题 4: 米白灰 */
+.workflowy-container.workflowy-theme-warm-beige .workflowy-content-display thead {
+    background-color: #e8e8e0;
+    border-bottom-color: #d8d8d0;
+}
+
+.workflowy-container.workflowy-theme-warm-beige .workflowy-content-display th,
+.workflowy-container.workflowy-theme-warm-beige .workflowy-content-display td {
+    border-color: #d8d8d0;
+    color: #4a4a4a;
+}
+
+.workflowy-container.workflowy-theme-warm-beige .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #f0f0e8;
+}
+
+.workflowy-container.workflowy-theme-warm-beige .workflowy-content-display tbody tr:hover {
+    background-color: #e0e0d8;
+}
+
+/* 主题 5: 淡紫 */
+.workflowy-container.workflowy-theme-soft-purple .workflowy-content-display thead {
+    background-color: #e6d9f0;
+    border-bottom-color: #d9c9e6;
+}
+
+.workflowy-container.workflowy-theme-soft-purple .workflowy-content-display th,
+.workflowy-container.workflowy-theme-soft-purple .workflowy-content-display td {
+    border-color: #d9c9e6;
+    color: #5b4a6b;
+}
+
+.workflowy-container.workflowy-theme-soft-purple .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #f5f0f8;
+}
+
+.workflowy-container.workflowy-theme-soft-purple .workflowy-content-display tbody tr:hover {
+    background-color: #ebe0f2;
+}
+
+/* 主题 6: 深蓝 */
+.workflowy-container.workflowy-theme-deep-blue .workflowy-content-display thead {
+    background-color: #2a3a4a;
+    border-bottom-color: #3a4a5a;
+}
+
+.workflowy-container.workflowy-theme-deep-blue .workflowy-content-display th,
+.workflowy-container.workflowy-theme-deep-blue .workflowy-content-display td {
+    border-color: #3a4a5a;
+    color: #e0e0e0;
+}
+
+.workflowy-container.workflowy-theme-deep-blue .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(93, 173, 226, 0.1);
+}
+
+.workflowy-container.workflowy-theme-deep-blue .workflowy-content-display tbody tr:hover {
+    background-color: rgba(93, 173, 226, 0.15);
+}
+
+/* 主题 7: 深灰 */
+.workflowy-container.workflowy-theme-dark-gray .workflowy-content-display thead {
+    background-color: #3a3a3a;
+    border-bottom-color: #4a4a4a;
+}
+
+.workflowy-container.workflowy-theme-dark-gray .workflowy-content-display th,
+.workflowy-container.workflowy-theme-dark-gray .workflowy-content-display td {
+    border-color: #4a4a4a;
+    color: #e0e0e0;
+}
+
+.workflowy-container.workflowy-theme-dark-gray .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(192, 192, 192, 0.1);
+}
+
+.workflowy-container.workflowy-theme-dark-gray .workflowy-content-display tbody tr:hover {
+    background-color: rgba(192, 192, 192, 0.15);
+}
+
+/* 主题 8: 森林绿 */
+.workflowy-container.workflowy-theme-forest-green .workflowy-content-display thead {
+    background-color: #c8e6c9;
+    border-bottom-color: #a5d6a7;
+}
+
+.workflowy-container.workflowy-theme-forest-green .workflowy-content-display th,
+.workflowy-container.workflowy-theme-forest-green .workflowy-content-display td {
+    border-color: #a5d6a7;
+    color: #1b5e20;
+}
+
+.workflowy-container.workflowy-theme-forest-green .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #e8f5e9;
+}
+
+.workflowy-container.workflowy-theme-forest-green .workflowy-content-display tbody tr:hover {
+    background-color: #c8e6c9;
+}
+
+/* 主题 9: 海洋蓝 */
+.workflowy-container.workflowy-theme-ocean-blue .workflowy-content-display thead {
+    background-color: #bbdefb;
+    border-bottom-color: #90caf9;
+}
+
+.workflowy-container.workflowy-theme-ocean-blue .workflowy-content-display th,
+.workflowy-container.workflowy-theme-ocean-blue .workflowy-content-display td {
+    border-color: #90caf9;
+    color: #0d47a1;
+}
+
+.workflowy-container.workflowy-theme-ocean-blue .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #e3f2fd;
+}
+
+.workflowy-container.workflowy-theme-ocean-blue .workflowy-content-display tbody tr:hover {
+    background-color: #bbdefb;
+}
+
+/* 主题 10: 日落橙 */
+.workflowy-container.workflowy-theme-sunset-orange .workflowy-content-display thead {
+    background-color: #ffe0b2;
+    border-bottom-color: #ffcc80;
+}
+
+.workflowy-container.workflowy-theme-sunset-orange .workflowy-content-display th,
+.workflowy-container.workflowy-theme-sunset-orange .workflowy-content-display td {
+    border-color: #ffcc80;
+    color: #e65100;
+}
+
+.workflowy-container.workflowy-theme-sunset-orange .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #fff3e0;
+}
+
+.workflowy-container.workflowy-theme-sunset-orange .workflowy-content-display tbody tr:hover {
+    background-color: #ffe0b2;
+}
+
+/* 主题 11: 樱花粉 */
+.workflowy-container.workflowy-theme-cherry-pink .workflowy-content-display thead {
+    background-color: #f8bbd0;
+    border-bottom-color: #f48fb1;
+}
+
+.workflowy-container.workflowy-theme-cherry-pink .workflowy-content-display th,
+.workflowy-container.workflowy-theme-cherry-pink .workflowy-content-display td {
+    border-color: #f48fb1;
+    color: #880e4f;
+}
+
+.workflowy-container.workflowy-theme-cherry-pink .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: #fce4ec;
+}
+
+.workflowy-container.workflowy-theme-cherry-pink .workflowy-content-display tbody tr:hover {
+    background-color: #f8bbd0;
+}
+
+/* 主题 12: 午夜黑 */
+.workflowy-container.workflowy-theme-midnight-black .workflowy-content-display thead {
+    background-color: #1a1a1a;
+    border-bottom-color: #2a2a2a;
+}
+
+.workflowy-container.workflowy-theme-midnight-black .workflowy-content-display th,
+.workflowy-container.workflowy-theme-midnight-black .workflowy-content-display td {
+    border-color: #2a2a2a;
+    color: #ffffff;
+}
+
+.workflowy-container.workflowy-theme-midnight-black .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.workflowy-container.workflowy-theme-midnight-black .workflowy-content-display tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 主题 13: Space (Element Dark) */
+.workflowy-container.workflowy-theme-element-dark .workflowy-content-display thead {
+    background-color: #3a3f44;
+    border-bottom-color: #4a4f54;
+}
+
+.workflowy-container.workflowy-theme-element-dark .workflowy-content-display th,
+.workflowy-container.workflowy-theme-element-dark .workflowy-content-display td {
+    border-color: #4a4f54;
+    color: #e0e0e0;
+}
+
+.workflowy-container.workflowy-theme-element-dark .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(251, 191, 36, 0.05);
+}
+
+.workflowy-container.workflowy-theme-element-dark .workflowy-content-display tbody tr:hover {
+    background-color: rgba(251, 191, 36, 0.1);
+}
+
+/* 主题 14: Hacker (Matrix Green) */
+.workflowy-container.workflowy-theme-matrix-green .workflowy-content-display thead {
+    background-color: #0a0a0a;
+    border-bottom-color: #1a1a1a;
+}
+
+.workflowy-container.workflowy-theme-matrix-green .workflowy-content-display th,
+.workflowy-container.workflowy-theme-matrix-green .workflowy-content-display td {
+    border-color: #1a1a1a;
+    color: #00ff00;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+}
+
+.workflowy-container.workflowy-theme-matrix-green .workflowy-content-display tbody tr:nth-child(even) {
+    background-color: rgba(0, 255, 0, 0.03);
+}
+
+.workflowy-container.workflowy-theme-matrix-green .workflowy-content-display tbody tr:hover {
+    background-color: rgba(0, 255, 0, 0.08);
+}
+
 /* 确保空内容时有最小高度 */
 .workflowy-content-display:empty::before {
     content: '\200B';
@@ -3866,7 +4207,8 @@
     min-height: 1.7em !important;
     /* 使用 em 单位，随字体缩放 */
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
+    /* 顶部对齐：确保多行内容时圆点/checkbox 与第一行对齐 */
     position: relative;
     padding-right: 24px !important;
     /* 为右侧折叠指示器区域留出空间 */
@@ -3910,8 +4252,13 @@
     min-height: 24px !important;
     /* 重置样式 */
     padding: 0 !important;
-    margin: 0 4px 0 0 !important;
-    /* 减少右边距 */
+    /*
+     * 顶部对齐：让 bullet 中心与文字第一行中心对齐
+     * 文字 padding-top: 4px，行高 1.4，字号 15px → 第一行中心 ≈ 4px + 0.5 * 1.4 * 15px / 2 ≈ 4px + 10.5px
+     * bullet 高度 24px，中心在 12px
+     * margin-top = (4px + 10.5px) - 12px ≈ 2.5px → 用 2px 即可
+     */
+    margin: 2px 4px 0 0 !important;
     /* 背景透明 */
     background: transparent !important;
     background-color: transparent !important;
@@ -4010,7 +4357,13 @@
     min-width: 1.6em !important;
     min-height: 1.6em !important;
     padding: 0 !important;
-    margin: 0 0.3em 0 0 !important;
+    /*
+     * 顶部对齐：让 checkbox 中心与文字第一行中心对齐
+     * 文字 padding-top: 4px，行高 1.4，字号 15px → 第一行中心 ≈ 14.5px
+     * checkbox 高度 1.6em ≈ 24px，中心在 12px
+     * margin-top ≈ 2.5px → 用 2px
+     */
+    margin: 2px 0.3em 0 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -4046,6 +4399,21 @@
     width: 12px;
     height: 12px;
     color: var(--text-on-accent);
+}
+
+/* 移动端有序列表序号 - 顶部对齐 */
+.is-mobile .workflowy-container .workflowy-order-number {
+    /*
+     * 让序号与 bullet 圆点视觉中心对齐
+     * bullet: margin-top 2px, 高度 24px, ::after 圆点在中心 → 圆点中心在 14px
+     * 序号: 字号 15px, line-height 1 → 高度 15px, 中心在 margin-top + 7.5px
+     * margin-top = 14 - 7.5 = 6.5px ≈ 6px
+     */
+    margin-top: 6px !important;
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
+    margin-left: 0 !important;
+    line-height: 1 !important;
 }
 
 /* ==================== 移动端缩进和垂直线 ==================== */
@@ -4171,16 +4539,34 @@
     left: 0;
     right: 0;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     background: var(--background-secondary);
     border-top: 1px solid var(--background-modifier-border);
-    padding: 4px 8px;
+    padding: 4px 0;
     z-index: 1000;
     gap: 0;
     touch-action: manipulation;
     -webkit-touch-callout: none;
     user-select: none;
+}
+
+/* 可滚动的按钮区域 */
+.is-mobile .workflowy-mobile-toolbar-scroll {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    gap: 0;
+    padding: 0 8px;
+}
+
+.is-mobile .workflowy-mobile-toolbar-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
 }
 
 /* 工具栏按钮 */
@@ -4215,11 +4601,28 @@
     pointer-events: none;
 }
 
-/* 收起键盘按钮特殊样式 */
+/* 收起键盘按钮 - 固定在工具栏最右侧 */
 .is-mobile .workflowy-mobile-btn-keyboard {
-    margin-left: 4px;
+    flex-shrink: 0;
+    margin: 0 4px;
     background: var(--background-primary);
     border: 1px solid var(--background-modifier-border);
+}
+
+/* 编辑工具栏容器 */
+.is-mobile .workflowy-mobile-toolbar-editbar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+/* 功能工具栏（键盘收起时显示） */
+.is-mobile .workflowy-mobile-toolbar-funcbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    padding: 0 8px;
 }
 
 /* 为工具栏预留底部空间 */
@@ -4235,8 +4638,11 @@
 /* 小屏手机工具栏优化 */
 @media (max-width: 375px) {
     .is-mobile .workflowy-mobile-toolbar {
-        padding: 3px 4px;
-        gap: 1px;
+        padding: 3px 0;
+    }
+
+    .is-mobile .workflowy-mobile-toolbar-scroll {
+        padding: 0 4px;
     }
 
     .is-mobile .workflowy-mobile-btn {
@@ -4255,8 +4661,12 @@
 /* 横屏模式优化 */
 @media (orientation: landscape) and (max-height: 500px) {
     .is-mobile .workflowy-mobile-toolbar {
-        padding: 4px 16px;
+        padding: 4px 0;
         padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .is-mobile .workflowy-mobile-toolbar-scroll {
+        padding: 0 16px;
     }
 
     .is-mobile .workflowy-mobile-btn {
