@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "0e4a8ec63908646d",
+        "id": "4a798ac64d43477a",
         "type": "tabs",
         "children": [
           {
-            "id": "8819bfdc599c4e4a",
+            "id": "f045fde2cb9b18b8",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,51 +20,8 @@
               "icon": "lucide-file",
               "title": "Home"
             }
-          },
-          {
-            "id": "ca957e787909c5a0",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "工作/小说/小说章节/第一千零一百二十三章——.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "第一千零一百二十三章——"
-            }
-          },
-          {
-            "id": "ced39fe55eb14680",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "工作/小说/小说章节/第一千零一百二十一章——订婚要给什么？.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "第一千零一百二十一章——订婚要给什么？"
-            }
-          },
-          {
-            "id": "aa6fb99050944868",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "工作/小说/小说章节/第一千零一百二十二章——恋爱的酸臭味…….md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "第一千零一百二十二章——恋爱的酸臭味……"
-            }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -291,12 +248,12 @@
       "obsidian42-brat:BRAT": false
     }
   },
-  "active": "ca957e787909c5a0",
+  "active": "f045fde2cb9b18b8",
   "lastOpenFiles": [
+    "工作/小说/小说章节/第一千零一百二十四章——.md",
+    "工作/小说/小说章节/第一千零一百二十三章——不欢迎我们？那我们走？.md",
     "工作/小说/小说相关信息/教团杀手.md",
-    "工作/小说/小说章节/第一千零一百二十三章——.md",
     "工作/小说/小说章节/第一千零一百二十二章——恋爱的酸臭味…….md",
-    "工作/小说/小说章节/第一千零一百二十一章——订婚要给什么？.md",
     "Home.md",
     "日常/诗/李白/经乱离后天恩流夜郎忆旧游书怀赠江夏韦太守良宰.md",
     "学习/插件用法/插件用法/插件用法.md",
