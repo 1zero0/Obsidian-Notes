@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Home.md",
+                "file": "日常/笔记/两人全CG攻略.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Home"
+              "title": "两人全CG攻略"
             }
           }
         ]
@@ -250,9 +250,10 @@
   },
   "active": "224c56a4f3fca244",
   "lastOpenFiles": [
+    "Home.md",
+    "日常/笔记/两人全CG攻略.md",
     "工作/小说/小说章节/第一千零一百二十五章——.md",
     "工作/小说/小说章节/第一千零一百二十四章——.md",
-    "Home.md",
     "工作/小说/小说章节/第一千零一百二十六章——.md",
     "工作/小说/小说相关信息/小说重要内容（重要剧情和人物等）.md",
     "工作/小说/小说相关信息/小说一些重大事件.md",
@@ -275,7 +276,6 @@
     "学习/剧本杀/如何写一个剧本杀/如何写作.md",
     "文稿.md",
     "日常手记.md",
-    "学习/Obsidian/Obsidian插件链接.md",
     "日常/诗/李白",
     "日常/诗",
     "学习/Obsidian",
