@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "00315f4e7de2b18c",
+        "id": "581e4a8c69b92c02",
         "type": "tabs",
         "children": [
           {
-            "id": "224c56a4f3fca244",
+            "id": "29cf43a32fcd1055",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -248,7 +248,7 @@
       "obsidian42-brat:BRAT": false
     }
   },
-  "active": "224c56a4f3fca244",
+  "active": "29cf43a32fcd1055",
   "lastOpenFiles": [
     "Home.md",
     "日常/笔记/两人全CG攻略.md",
