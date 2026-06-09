@@ -49,7 +49,8 @@
               "title": "第一千零一百二十六章——"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -273,14 +274,15 @@
       "pdf-plus:PDF++: Toggle auto-paste": false,
       "obsidian-git:Open Git source control": false,
       "homepage:Open homepage": false,
-      "obsidian42-brat:BRAT": false
+      "obsidian42-brat:BRAT": false,
+      "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "f2623d267ff8c352",
+  "active": "8fe25b8a8b133b44",
   "lastOpenFiles": [
+    "工作/小说/小说章节/第一千零一百二十五章——狼狈的完成了第一次任务…….md",
     "工作/小说/小说章节/第一千零一百二十六章——.md",
     "工作/小说/小说章节/第一千零一百二十四章——.md",
-    "工作/小说/小说章节/第一千零一百二十五章——狼狈的完成了第一次任务…….md",
     "Home.md",
     "工作/小说/小说相关信息/教团杀手.md",
     "日常/笔记/未命名.md",

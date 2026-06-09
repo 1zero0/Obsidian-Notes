@@ -429,6 +429,46 @@
     border-radius: 4px;
 }
 
+/* 跳转目标高亮：由标题/块引用导航临时添加 is-flashing */
+.workflowy-container .workflowy-content.is-flashing,
+.workflowy-container .workflowy-content-display.is-flashing,
+.workflowy-container .workflowy-content-editor.is-flashing,
+.workflowy-container h1.is-flashing,
+.workflowy-container h2.is-flashing,
+.workflowy-container h3.is-flashing,
+.workflowy-container h4.is-flashing,
+.workflowy-container h5.is-flashing,
+.workflowy-container h6.is-flashing,
+.workflowy-daily-notes-container .workflowy-content.is-flashing,
+.workflowy-daily-notes-container .workflowy-content-display.is-flashing,
+.workflowy-daily-notes-container .workflowy-content-editor.is-flashing,
+.workflowy-daily-notes-container h1.is-flashing,
+.workflowy-daily-notes-container h2.is-flashing,
+.workflowy-daily-notes-container h3.is-flashing,
+.workflowy-daily-notes-container h4.is-flashing,
+.workflowy-daily-notes-container h5.is-flashing,
+.workflowy-daily-notes-container h6.is-flashing {
+    animation: workflowy-target-flash 2s ease-out !important;
+    background: rgba(var(--color-yellow-rgb), 0.35) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.28) inset !important;
+}
+
+@keyframes workflowy-target-flash {
+    0% {
+        background: rgba(var(--color-yellow-rgb), 0.75);
+        box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.45) inset;
+    }
+    55% {
+        background: rgba(var(--color-yellow-rgb), 0.35);
+        box-shadow: 0 0 0 2px rgba(var(--color-accent-rgb), 0.28) inset;
+    }
+    100% {
+        background: rgba(var(--color-yellow-rgb), 0);
+        box-shadow: 0 0 0 0 rgba(var(--color-accent-rgb), 0) inset;
+    }
+}
+
 /* 移除自动动画以防止重新渲染时所有内容抖动 */
 /* .workflowy-container .workflowy-item {
     animation: fadeInUp 0.2s ease-out;
@@ -5081,3 +5121,534 @@
 
 
 /* Slash Menu Tooltip - 使用原生 title 属性，无需自定义样式 */
+
+/* Daily Notes 聚合大纲视图：仅影响聚合容器与其嵌套 section */
+.workflowy-daily-notes-themed-shell {
+    background: var(--theme-bg-primary, var(--background-primary));
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-themed-shell .view-content,
+.workflowy-daily-notes-themed-shell .workflowy-daily-notes-container {
+    background: var(--theme-bg-primary, var(--background-primary));
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-container {
+    height: 100%;
+    overflow-y: auto;
+    padding: var(--size-4-2) var(--size-4-4);
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-classic-white {
+    --theme-bg-primary: #ffffff;
+    --theme-bg-secondary: #f5f5f5;
+    --theme-text-normal: #2c3e50;
+    --theme-text-muted: #7f8c8d;
+    --theme-line: #ecf0f1;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-dark-orange-green {
+    --theme-bg-primary: #0a0a0a;
+    --theme-bg-secondary: #1a1a1a;
+    --theme-text-normal: #ff9500;
+    --theme-text-muted: #4cd964;
+    --theme-line: #2ecc71;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-warm-beige {
+    --theme-bg-primary: #f5f5f0;
+    --theme-bg-secondary: #e8e8e0;
+    --theme-text-normal: #4a4a4a;
+    --theme-text-muted: #7a7a7a;
+    --theme-line: #d0d0c8;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-soft-purple {
+    --theme-bg-primary: #f0e6f6;
+    --theme-bg-secondary: #e6d9f0;
+    --theme-text-normal: #5b4a6b;
+    --theme-text-muted: #8b7a9b;
+    --theme-line: #d5c5e5;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-deep-blue {
+    --theme-bg-primary: #1e2a3a;
+    --theme-bg-secondary: #2a3a4a;
+    --theme-text-normal: #e0e0e0;
+    --theme-text-muted: #b0b0b0;
+    --theme-line: #3a4a5a;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-dark-gray {
+    --theme-bg-primary: #2a2a2a;
+    --theme-bg-secondary: #3a3a3a;
+    --theme-text-normal: #e0e0e0;
+    --theme-text-muted: #b0b0b0;
+    --theme-line: #4a4a4a;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-forest-green {
+    --theme-bg-primary: #e8f5e9;
+    --theme-bg-secondary: #c8e6c9;
+    --theme-text-normal: #1b5e20;
+    --theme-text-muted: #2e7d32;
+    --theme-line: #a5d6a7;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-ocean-blue {
+    --theme-bg-primary: #e3f2fd;
+    --theme-bg-secondary: #bbdefb;
+    --theme-text-normal: #0d47a1;
+    --theme-text-muted: #1565c0;
+    --theme-line: #90caf9;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-sunset-orange {
+    --theme-bg-primary: #fff3e0;
+    --theme-bg-secondary: #ffe0b2;
+    --theme-text-normal: #e65100;
+    --theme-text-muted: #ef6c00;
+    --theme-line: #ffcc80;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-cherry-pink {
+    --theme-bg-primary: #fce4ec;
+    --theme-bg-secondary: #f8bbd0;
+    --theme-text-normal: #880e4f;
+    --theme-text-muted: #ad1457;
+    --theme-line: #f48fb1;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-midnight-black {
+    --theme-bg-primary: #000000;
+    --theme-bg-secondary: #1a1a1a;
+    --theme-text-normal: #ffffff;
+    --theme-text-muted: #bdbdbd;
+    --theme-line: #2a2a2a;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-element-dark {
+    --theme-bg-primary: #282c34;
+    --theme-bg-secondary: #3a3f44;
+    --theme-text-normal: #e0e0e0;
+    --theme-text-muted: #fbbf24;
+    --theme-line: #4a4f54;
+}
+
+.workflowy-daily-notes-themed-shell.workflowy-theme-matrix-green {
+    --theme-bg-primary: #000000;
+    --theme-bg-secondary: #0a0a0a;
+    --theme-text-normal: #00ff00;
+    --theme-text-muted: #00cc00;
+    --theme-line: #1a1a1a;
+}
+
+.workflowy-daily-notes-themed-shell .view-header {
+    background: var(--theme-bg-primary, var(--background-primary));
+    border-bottom-color: var(--theme-line, var(--background-modifier-border));
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-themed-shell .view-header-title,
+.workflowy-daily-notes-themed-shell .view-action {
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-section {
+    margin: 0;
+    padding: var(--size-4-4) 0 var(--size-4-3);
+    border-top: 1px solid var(--theme-line, var(--background-modifier-border));
+    overflow: visible;
+    background: var(--theme-bg-primary, var(--background-primary));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-section:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-header {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    padding: var(--size-4-2) var(--size-4-3);
+    background: var(--theme-bg-secondary, var(--background-secondary));
+    border-bottom: 1px solid var(--theme-line, var(--background-modifier-border));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-collapse,
+.workflowy-daily-notes-container .workflowy-daily-note-title {
+    border: 0;
+    background: transparent;
+    color: var(--theme-text-normal, var(--text-normal));
+    cursor: pointer;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-collapse {
+    padding: var(--size-4-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-collapse::before {
+    content: '⌄';
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-collapse:hover {
+    background: var(--background-modifier-hover);
+    border-radius: var(--radius-s);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-section.is-collapsed .workflowy-daily-note-collapse::before {
+    transform: rotate(-90deg);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-title {
+    font-size: var(--font-ui-medium);
+    font-weight: var(--font-semibold);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-navigation {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-1);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding-left: var(--size-4-2);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-navigation.is-empty {
+    display: none;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-item {
+    border: 0;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--theme-text-muted, var(--text-muted));
+    cursor: pointer;
+    font-size: var(--font-ui-small);
+    max-width: 180px;
+    overflow: hidden;
+    padding: var(--size-4-1) var(--size-4-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-item:hover {
+    background: var(--theme-bg-primary, var(--background-modifier-hover));
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-item.current {
+    color: var(--theme-text-normal, var(--text-accent));
+    font-weight: var(--font-semibold);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-zoom-delimiter {
+    color: var(--theme-text-muted, var(--text-faint));
+    flex-shrink: 0;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-editor {
+    min-height: 160px;
+    overflow: visible;
+}
+
+.workflowy-daily-notes-container .workflowy-empty-hint {
+    align-items: center;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    color: var(--theme-text-muted, var(--text-muted));
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    font-style: italic;
+    height: auto;
+    justify-content: flex-start;
+    margin: 0;
+    min-height: 44px;
+    padding: var(--size-4-2) var(--size-4-3) var(--size-4-2) 30px;
+    text-align: left;
+    width: auto;
+}
+
+.workflowy-daily-notes-container .workflowy-empty-hint:hover,
+.workflowy-daily-notes-container .workflowy-empty-hint:focus-visible {
+    color: var(--theme-text-normal, var(--text-normal));
+}
+
+.workflowy-daily-notes-container .workflowy-empty-hint:focus-visible {
+    box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+    outline: none;
+}
+
+.workflowy-daily-notes-container .workflowy-empty-hint:disabled {
+    color: var(--theme-text-muted, var(--text-faint));
+    cursor: default;
+    opacity: 0.75;
+}
+
+/* Daily Notes 中的 workflowy-container 使用 auto 高度 */
+.workflowy-daily-notes-container .workflowy-daily-note-editor .workflowy-container {
+    height: auto !important;
+    min-height: 50px !important;
+    overflow: visible !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root.workspace-split,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workspace-tabs,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workspace-tab-container,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workspace-leaf,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workspace-leaf-content,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .view-content,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workflowy-container,
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workflowy-editor {
+    display: block !important;
+    position: relative !important;
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workspace-leaf-content[data-type] {
+    contain: none !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workflowy-container {
+    padding: var(--size-4-4);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .view-header {
+    display: none !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workflowy-navigation-header {
+    display: none !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-embedded-root .workflowy-editor {
+    min-height: 50px !important;
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-placeholder,
+.workflowy-daily-notes-container .workflowy-daily-notes-empty,
+.workflowy-daily-notes-container .workflowy-daily-notes-today-action,
+.workflowy-daily-notes-container .workflowy-daily-note-error {
+    display: flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    padding: var(--size-4-4);
+    color: var(--theme-text-muted, var(--text-muted));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-notes-loader {
+    display: flex;
+    justify-content: center;
+    padding: var(--size-4-6) var(--size-4-4);
+    color: var(--theme-text-muted, var(--text-muted));
+    font-size: var(--font-ui-small);
+}
+
+.workflowy-daily-notes-container .workflowy-daily-notes-loader.is-complete {
+    color: var(--theme-text-muted, var(--text-faint));
+}
+
+.workflowy-daily-notes-container .workflowy-daily-note-section.is-collapsed .workflowy-daily-note-header {
+    border-bottom: 0;
+}
+
+/* Daily Notes Plus 授权页 */
+.workflowy-license-section {
+    margin: var(--size-4-6) 0 var(--size-4-8);
+}
+
+.workflowy-license-panel {
+    padding: var(--size-4-5);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-l);
+    background: var(--background-primary-alt);
+}
+
+.workflowy-license-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--size-4-2);
+    margin-bottom: var(--size-4-5);
+    padding: var(--size-4-2) var(--size-4-4);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    font-weight: 600;
+}
+
+.workflowy-license-status--active {
+    color: var(--text-success);
+    background: rgba(var(--color-green-rgb), 0.12);
+    border-color: rgba(var(--color-green-rgb), 0.28);
+}
+
+.workflowy-license-status--trial {
+    color: var(--text-accent);
+    background: rgba(var(--color-accent-rgb), 0.12);
+    border-color: rgba(var(--color-accent-rgb), 0.28);
+}
+
+.workflowy-license-status--expired {
+    color: var(--text-error);
+    background: rgba(var(--color-red-rgb), 0.12);
+    border-color: rgba(var(--color-red-rgb), 0.28);
+}
+
+.workflowy-license-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.2em;
+    height: 1.2em;
+}
+
+.workflowy-license-label {
+    display: block;
+    margin: var(--size-4-4) 0 var(--size-4-2);
+    color: var(--text-normal);
+    font-weight: 600;
+}
+
+.workflowy-license-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--size-4-2);
+    align-items: center;
+}
+
+.workflowy-license-input {
+    width: 100%;
+    min-height: 40px;
+    padding: var(--size-4-2) var(--size-4-3);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    color: var(--text-normal);
+    background: var(--background-primary);
+}
+
+.workflowy-license-btn {
+    min-height: 40px;
+    padding: 0 var(--size-4-5);
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-s);
+    color: var(--text-normal);
+    background: var(--interactive-normal);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.workflowy-license-btn:hover,
+.workflowy-license-btn:focus-visible {
+    color: var(--text-on-accent);
+    background: var(--interactive-accent);
+}
+
+.workflowy-license-btn--validate {
+    border-color: rgba(var(--color-green-rgb), 0.35);
+}
+
+.workflowy-license-desc {
+    margin-top: var(--size-4-5);
+    color: var(--text-muted);
+    line-height: var(--line-height-normal);
+}
+
+.workflowy-license-desc strong {
+    display: block;
+    margin-bottom: var(--size-4-2);
+    color: var(--text-normal);
+}
+
+.workflowy-license-desc ol {
+    margin: 0;
+    padding-left: var(--size-4-6);
+}
+
+.workflowy-license-desc li {
+    margin: var(--size-2-3) 0;
+}
+
+.workflowy-license-qr-grid {
+    display: grid;
+    grid-template-columns: minmax(180px, 280px) minmax(280px, 1fr);
+    gap: var(--size-4-6);
+    align-items: end;
+    margin-top: var(--size-4-6);
+}
+
+.workflowy-license-qr-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--size-4-2);
+}
+
+.workflowy-license-qr-title {
+    color: var(--text-normal);
+    font-weight: 600;
+}
+
+.workflowy-license-qr-img {
+    display: block;
+    max-width: 100%;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    background: var(--background-primary);
+    object-fit: contain;
+}
+
+.workflowy-license-qr-img--appreciation {
+    width: 220px;
+    height: 220px;
+}
+
+.workflowy-license-qr-img--wechat {
+    width: 420px;
+    height: 154px;
+}
+
+.workflowy-license-qr-img.is-hidden {
+    display: none;
+}
+
+.workflowy-license-qr-error {
+    padding: var(--size-4-3);
+    color: var(--text-error);
+    border: 1px solid rgba(var(--color-red-rgb), 0.25);
+    border-radius: var(--radius-s);
+    background: rgba(var(--color-red-rgb), 0.08);
+}
+
+@media (max-width: 720px) {
+    .workflowy-license-row,
+    .workflowy-license-qr-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .workflowy-license-btn {
+        width: 100%;
+    }
+
+    .workflowy-license-qr-img--wechat {
+        width: 100%;
+        height: auto;
+    }
+}
