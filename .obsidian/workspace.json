@@ -41,12 +41,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "工作/小说/小说章节/第一千零一百三十一章——.md",
+                "file": "工作/小说/小说章节/第一千零一百三十一章——放假！.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "第一千零一百三十一章——"
+              "title": "第一千零一百三十一章——放假！"
             }
           },
           {
@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "工作/小说/小说章节/第一千零一百二十九章——忙！.md",
+                "file": "工作/小说/小说章节/第一千零一百三十二章——.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "第一千零一百二十九章——忙！"
+              "title": "第一千零一百三十二章——"
             }
           },
           {
@@ -92,7 +92,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -296,7 +296,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 245.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -319,14 +319,14 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "f54c48750eff8c96",
+  "active": "ff595a66408602d1",
   "lastOpenFiles": [
+    "工作/小说/小说章节/第一千零一百三十一章——放假！.md",
     "工作/小说/小说相关信息/教团杀手.md",
-    "工作/小说/小说章节/第一千零一百三十一章——.md",
     "工作/小说/小说相关信息/怪物.md",
     "工作/小说/小说章节/第一千零一百三十章——他太乖了，以至于我们都忘了…….md",
     "随笔/电脑黑屏专用代码.md",
-    "工作/小说/小说章节/第一千零一百二十九章——忙！.md",
+    "工作/小说/小说章节/第一千零一百三十二章——.md",
     "工作/小说/小说相关信息/魔骑对决决赛比赛.md",
     "工作/小说/小说相关信息/教团/贪婪的计划.md",
     "工作/小说/小说相关信息/教团/七罪.md",
