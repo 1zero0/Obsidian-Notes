@@ -27,7 +27,7 @@ __export(main_exports, {
   default: () => WorkflowyPlugin
 });
 module.exports = __toCommonJS(main_exports);
-var import_obsidian19 = require("obsidian");
+var import_obsidian21 = require("obsidian");
 
 // src/constants.ts
 var WORKFLOWY_VIEW_TYPE = "workflowy-view";
@@ -78,7 +78,7 @@ var UI_CONFIG = {
 };
 
 // src/workflowy-view.ts
-var import_obsidian9 = require("obsidian");
+var import_obsidian11 = require("obsidian");
 
 // src/utils.ts
 function generateId() {
@@ -2374,7 +2374,8 @@ var ui = {
   nav: {
     searchPlaceholder: "Search...",
     switchTheme: "Switch theme",
-    jumpToLevel: "Jump to this level"
+    jumpToLevel: "Jump to this level",
+    jumpToLevelWithTitle: "Jump to: {{title}}"
   },
   // 标签建议菜单
   tagSuggest: {
@@ -2496,6 +2497,7 @@ var features = {
     italic: "Italic",
     highlight: "Highlight",
     insertLink: "Insert link",
+    insertDoubleLink: "Insert double link",
     insertExternalLink: "Insert external link",
     cut: "Cut",
     copy: "Copy",
@@ -3001,7 +3003,8 @@ var ui2 = {
   nav: {
     searchPlaceholder: "\u641C\u7D22...",
     switchTheme: "\u5207\u6362\u4E3B\u9898",
-    jumpToLevel: "\u8DF3\u8F6C\u5230\u6B64\u5C42\u7EA7"
+    jumpToLevel: "\u8DF3\u8F6C\u5230\u6B64\u5C42\u7EA7",
+    jumpToLevelWithTitle: "\u8DF3\u8F6C\u5230\uFF1A{{title}}"
   },
   // 标签建议菜单
   tagSuggest: {
@@ -3123,6 +3126,7 @@ var features2 = {
     italic: "\u659C\u4F53",
     highlight: "\u9AD8\u4EAE",
     insertLink: "\u63D2\u5165\u94FE\u63A5",
+    insertDoubleLink: "\u63D2\u5165\u53CC\u94FE",
     insertExternalLink: "\u63D2\u5165\u5916\u90E8\u94FE\u63A5",
     cut: "\u526A\u5207",
     copy: "\u590D\u5236",
@@ -3454,6 +3458,10 @@ var import_obsidian6 = require("obsidian");
 var import_obsidian3 = require("obsidian");
 var LivePreviewEditor = class {
   constructor(app, element) {
+    this.shortcutsBound = false;
+    this.contextMenuBound = false;
+    this.keyDownHandler = (e) => this.handleKeyDown(e);
+    this.contextMenuHandler = (e) => this.handleContextMenu(e);
     this.app = app;
     this.element = element;
   }
@@ -3461,13 +3469,19 @@ var LivePreviewEditor = class {
    * 绑定快捷键事件
    */
   bindShortcuts() {
-    this.element.addEventListener("keydown", this.handleKeyDown.bind(this));
+    if (this.shortcutsBound)
+      return;
+    this.element.addEventListener("keydown", this.keyDownHandler);
+    this.shortcutsBound = true;
   }
   /**
    * 绑定右键菜单
    */
   bindContextMenu() {
-    this.element.addEventListener("contextmenu", this.handleContextMenu.bind(this));
+    if (this.contextMenuBound)
+      return;
+    this.element.addEventListener("contextmenu", this.contextMenuHandler);
+    this.contextMenuBound = true;
   }
   /**
    * 处理键盘快捷键
@@ -3520,6 +3534,9 @@ var LivePreviewEditor = class {
     menu.addSeparator();
     menu.addItem((item) => {
       item.setTitle(t("features.contextMenu.insertLink")).setIcon("link").onClick(() => this.insertLink());
+    });
+    menu.addItem((item) => {
+      item.setTitle(t("features.contextMenu.insertDoubleLink")).setIcon("links-coming-in").onClick(() => this.insertDoubleLink());
     });
     menu.addItem((item) => {
       item.setTitle(t("features.contextMenu.insertExternalLink")).setIcon("external-link").onClick(() => this.insertExternalLink());
@@ -3667,6 +3684,48 @@ var LivePreviewEditor = class {
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
   }
   /**
+   * 插入空双链或用双链包裹选中文本
+   */
+  insertDoubleLink() {
+    if (this.element instanceof HTMLTextAreaElement) {
+      this.insertDoubleLinkTextarea();
+      return;
+    }
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0)
+      return;
+    const range = selection.getRangeAt(0);
+    const selectedText = selection.toString();
+    const linkMarkdown = `[[${selectedText}]]`;
+    const textNode = document.createTextNode(linkMarkdown);
+    range.deleteContents();
+    range.insertNode(textNode);
+    const newRange = document.createRange();
+    const cursorPos = selectedText ? linkMarkdown.length : 2;
+    newRange.setStart(textNode, cursorPos);
+    newRange.setEnd(textNode, cursorPos);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+    this.element.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  /**
+   * 为 textarea 插入空双链或用双链包裹选中文本
+   */
+  insertDoubleLinkTextarea() {
+    const textarea = this.element;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    const linkMarkdown = `[[${selectedText}]]`;
+    const beforeText = textarea.value.substring(0, start);
+    const afterText = textarea.value.substring(end);
+    textarea.value = beforeText + linkMarkdown + afterText;
+    const newCursorPos = selectedText ? start + linkMarkdown.length : start + 2;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+    textarea.focus();
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  /**
    * 插入外部链接
    */
   insertExternalLink() {
@@ -3732,6 +3791,17 @@ var LivePreviewEditor = class {
    * 解绑事件
    */
   unbind() {
+    this.destroy();
+  }
+  destroy() {
+    if (this.shortcutsBound) {
+      this.element.removeEventListener("keydown", this.keyDownHandler);
+      this.shortcutsBound = false;
+    }
+    if (this.contextMenuBound) {
+      this.element.removeEventListener("contextmenu", this.contextMenuHandler);
+      this.contextMenuBound = false;
+    }
   }
 };
 
@@ -5623,11 +5693,17 @@ var _OutlineItem = class {
     const parentBlock = this.findParentBlock(allBlocks, zoomedBlockId);
     if (parentBlock) {
       if (this.onBulletClick) {
-        this.onBulletClick(parentBlock.id);
+        this.onBulletClick(parentBlock.id, {
+          source: "keyboard",
+          direction: "out"
+        });
       }
     } else {
       if (this.onBulletClick) {
-        this.onBulletClick(zoomedBlockId);
+        this.onBulletClick(zoomedBlockId, {
+          source: "keyboard",
+          direction: "out"
+        });
       }
     }
   }
@@ -5641,13 +5717,21 @@ var _OutlineItem = class {
       if (this.block.children.length > 0) {
         const firstChild = this.block.children[0];
         if (this.onBulletClick) {
-          this.onBulletClick(firstChild.id);
+          this.onBulletClick(firstChild.id, {
+            source: "keyboard",
+            direction: "in",
+            cursorState: this.getZoomCursorState(firstChild.id)
+          });
         }
       } else {
       }
     } else {
       if (this.onBulletClick) {
-        this.onBulletClick(this.block.id);
+        this.onBulletClick(this.block.id, {
+          source: "keyboard",
+          direction: "in",
+          cursorState: this.getZoomCursorState(this.block.id)
+        });
       }
     }
   }
@@ -6540,25 +6624,59 @@ var _OutlineItem = class {
    * Compute current offset and update UndoManager cursor state (Req 3.1)
    */
   notifyCursorState(target) {
-    let offset = 0;
-    let selectionLength = 0;
-    const el = target || document.activeElement || this.contentElement;
-    if (el instanceof HTMLTextAreaElement) {
-      offset = el.selectionStart || 0;
-      selectionLength = (el.selectionEnd || 0) - offset;
-    } else {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        offset = range.startOffset;
-        selectionLength = range.endOffset - range.startOffset;
-      }
-    }
+    const { offset, selectionLength } = this.getCursorOffsetAndSelection(target);
     this.editor.setCursorStateForNextTransaction({
       blockId: this.block.id,
       offset,
       selectionLength
     });
+  }
+  getZoomCursorState(blockId) {
+    if (blockId !== this.block.id) {
+      return {
+        blockId,
+        offset: 0,
+        selectionLength: 0
+      };
+    }
+    const { offset, selectionLength } = this.getCursorOffsetAndSelection();
+    return {
+      blockId,
+      offset,
+      selectionLength
+    };
+  }
+  getCursorOffsetAndSelection(target) {
+    const el = target || document.activeElement || this.contentElement;
+    if (el instanceof HTMLTextAreaElement) {
+      const offset = el.selectionStart || 0;
+      return {
+        offset,
+        selectionLength: (el.selectionEnd || 0) - offset
+      };
+    }
+    const contentEl = this.contentElement && el && this.contentElement.contains(el) ? this.contentElement : (el == null ? void 0 : el.isContentEditable) ? el : this.contentElement;
+    if (contentEl) {
+      return this.getContentEditableCursorState(contentEl);
+    }
+    return { offset: 0, selectionLength: 0 };
+  }
+  getContentEditableCursorState(contentEl) {
+    const selection = window.getSelection();
+    if (!selection || selection.rangeCount === 0) {
+      return { offset: 0, selectionLength: 0 };
+    }
+    const range = selection.getRangeAt(0);
+    if (!contentEl.contains(range.startContainer)) {
+      return { offset: 0, selectionLength: 0 };
+    }
+    const prefixRange = range.cloneRange();
+    prefixRange.selectNodeContents(contentEl);
+    prefixRange.setEnd(range.startContainer, range.startOffset);
+    return {
+      offset: prefixRange.toString().length,
+      selectionLength: range.toString().length
+    };
   }
   /**
    * 处理文件拖拽的 drop 事件
@@ -6816,23 +6934,46 @@ var _OutlineItem = class {
    * 辅助方法 - 焦点导航（借鉴 OutlineItemEnhanced）
    */
   focusPreviousBlock() {
-    const allBlocks = getAllBlocks(this.editor.getState().blocks);
-    const currentIndex = allBlocks.findIndex((b) => b.id === this.block.id);
+    const visibleBlockElements = this.getVisibleBlockElementsInCurrentEditor();
+    const currentIndex = visibleBlockElements.findIndex((element) => element === this.element);
     if (currentIndex > 0) {
-      const prevBlock = allBlocks[currentIndex - 1];
-      this.focusBlockAtEnd(prevBlock.id);
+      const prevBlockId = visibleBlockElements[currentIndex - 1].dataset.blockId;
+      if (prevBlockId) {
+        this.focusBlockAtEnd(prevBlockId);
+      }
     }
   }
   focusNextBlock() {
-    const allBlocks = getAllBlocks(this.editor.getState().blocks);
-    const currentIndex = allBlocks.findIndex((b) => b.id === this.block.id);
-    if (currentIndex < allBlocks.length - 1) {
-      const nextBlock = allBlocks[currentIndex + 1];
-      this.focusBlockAtStart(nextBlock.id);
+    const visibleBlockElements = this.getVisibleBlockElementsInCurrentEditor();
+    const currentIndex = visibleBlockElements.findIndex((element) => element === this.element);
+    if (currentIndex >= 0 && currentIndex < visibleBlockElements.length - 1) {
+      const nextBlockId = visibleBlockElements[currentIndex + 1].dataset.blockId;
+      if (nextBlockId) {
+        this.focusBlockAtStart(nextBlockId);
+      }
     }
   }
+  getCurrentEditorRoot() {
+    return this.element.closest(".workflowy-editor");
+  }
+  getVisibleBlockElementsInCurrentEditor() {
+    const root = this.getCurrentEditorRoot();
+    if (!root) {
+      return [];
+    }
+    return Array.from(root.querySelectorAll(".workflowy-item[data-block-id]")).filter((element) => {
+      return element.isConnected && element.style.display !== "none" && !element.classList.contains("workflowy-filtered-hidden");
+    });
+  }
+  findBlockElementInCurrentEditor(blockId) {
+    const root = this.getCurrentEditorRoot();
+    if (!root) {
+      return null;
+    }
+    return this.getVisibleBlockElementsInCurrentEditor().find((element) => element.dataset.blockId === blockId) || null;
+  }
   focusBlockAtStart(blockId) {
-    const blockElement = document.querySelector(`[data-block-id="${blockId}"]`);
+    const blockElement = this.findBlockElementInCurrentEditor(blockId);
     if (!blockElement)
       return;
     const editorElement = blockElement.querySelector(".workflowy-content-editor");
@@ -6872,7 +7013,7 @@ var _OutlineItem = class {
     }
   }
   focusBlockAtEnd(blockId) {
-    const blockElement = document.querySelector(`[data-block-id="${blockId}"]`);
+    const blockElement = this.findBlockElementInCurrentEditor(blockId);
     if (!blockElement)
       return;
     const editorElement = blockElement.querySelector(".workflowy-content-editor");
@@ -7296,6 +7437,7 @@ var _OutlineItem = class {
       this.renderComponent = null;
     }
     if (this.livePreviewEditor) {
+      this.livePreviewEditor.destroy();
       this.livePreviewEditor = null;
     }
     if (this.linkSuggestManager) {
@@ -9790,6 +9932,7 @@ var VerticalLinesManager = class {
 };
 
 // src/features/multi-selection.ts
+var import_obsidian7 = require("obsidian");
 var MultiSelectionManager = class {
   constructor(container, editor, onSelectionChange, onRender) {
     this.selectedBlocks = /* @__PURE__ */ new Set();
@@ -9798,6 +9941,13 @@ var MultiSelectionManager = class {
     this.selectionBox = null;
     this.justFinishedSelecting = false;
     this.selectionCounter = null;
+    this.lastEditorCursorState = null;
+    this.isDraggingSelection = false;
+    this.autoScrollFrame = null;
+    this.autoScrollDirection = 0;
+    this.lastAutoScrollTime = null;
+    this.lastPointerY = 0;
+    this.activePointerId = null;
     this.updateThrottleTimer = null;
     // 销毁标志 - 防止销毁后继续执行
     this.isDestroyed = false;
@@ -9864,39 +10014,41 @@ var MultiSelectionManager = class {
    * 绑定事件监听器
    */
   bindEvents() {
-    this.boundMouseDownHandler = this.handleMouseDown.bind(this);
-    this.boundMouseMoveHandler = this.handleMouseMove.bind(this);
-    this.boundMouseUpHandler = this.handleMouseUp.bind(this);
+    this.boundPointerDownHandler = this.handlePointerDown.bind(this);
+    this.boundPointerMoveHandler = this.handlePointerMove.bind(this);
+    this.boundPointerUpHandler = this.handlePointerUp.bind(this);
+    this.boundPointerCancelHandler = this.handlePointerCancel.bind(this);
     this.boundKeyDownHandler = this.handleKeyDown.bind(this);
     this.boundContainerClickHandler = this.handleContainerClick.bind(this);
-    this.container.addEventListener("mousedown", this.boundMouseDownHandler, true);
-    document.addEventListener("mousemove", this.boundMouseMoveHandler);
-    document.addEventListener("mouseup", this.boundMouseUpHandler);
+    this.container.addEventListener("pointerdown", this.boundPointerDownHandler, true);
+    document.addEventListener("pointermove", this.boundPointerMoveHandler, true);
+    document.addEventListener("pointerup", this.boundPointerUpHandler, true);
+    document.addEventListener("pointercancel", this.boundPointerCancelHandler, true);
     document.addEventListener("keydown", this.boundKeyDownHandler, true);
     this.container.addEventListener("click", this.boundContainerClickHandler);
   }
   /**
-   * 处理鼠标按下事件
+   * 处理指针按下事件
    */
-  handleMouseDown(e) {
-    if (e.button !== 0)
+  handlePointerDown(e) {
+    if (e.button !== 0 || this.isDestroyed)
+      return;
+    if (import_obsidian7.Platform.isMobile || e.pointerType === "touch" || e.pointerType === "pen")
       return;
     const target = e.target;
     const bulletElement = target.closest(".workflowy-bullet");
     if (bulletElement) {
       return;
     }
-    if (target.classList.contains("workflowy-content-editor") || target.tagName === "TEXTAREA") {
+    const gestureTarget = this.getSelectionGestureTarget(target, e);
+    if (!gestureTarget) {
       return;
     }
-    const contentElement = target.closest(".workflowy-content, .workflowy-content-display");
-    if (!contentElement) {
-      return;
-    }
+    const { contentElement, source } = gestureTarget;
     if (target.classList.contains("workflowy-collapse") || target.classList.contains("workflowy-vertical-line") || target.closest(".workflowy-collapse")) {
       return;
     }
-    let blockElement = contentElement.closest("[data-block-id]");
+    let blockElement = contentElement.closest(".workflowy-item[data-block-id]");
     if (!blockElement) {
       const blockId2 = contentElement.getAttribute("data-block-id");
       if (blockId2) {
@@ -9919,36 +10071,48 @@ var MultiSelectionManager = class {
     }
     this.clearSelection();
     this.isSelecting = true;
-    this.selectionStart = { x: e.clientX, y: e.clientY };
-    this.selectionStart.startBlockId = blockId;
-    this.selectionStart.startElement = blockElement;
+    this.isDraggingSelection = false;
+    this.activePointerId = e.pointerId;
+    this.lastPointerY = e.clientY;
+    this.selectionStart = {
+      x: e.clientX,
+      y: e.clientY,
+      startBlockId: blockId,
+      startElement: blockElement,
+      pointerId: e.pointerId,
+      source,
+      requiresBlockExit: gestureTarget.requiresBlockExit,
+      cursorState: source === "editor" ? this.getTextareaCursorState(contentElement, blockId) : void 0
+    };
   }
   /**
-   * 处理鼠标移动事件
+   * 处理指针移动事件
    */
-  handleMouseMove(e) {
+  handlePointerMove(e) {
     if (this.isDestroyed)
       return;
-    if (!this.isSelecting || !this.selectionStart) {
+    if (!this.isSelecting || !this.selectionStart || this.activePointerId !== e.pointerId) {
       return;
     }
     if (!this.container) {
       return;
     }
+    this.lastPointerY = e.clientY;
     const deltaY = e.clientY - this.selectionStart.y;
     const minDragDistance = 8;
     if (Math.abs(deltaY) < minDragDistance) {
       return;
     }
-    e.preventDefault();
-    this.container.classList.add("selecting");
-    if (this.selectionBox) {
-      this.selectionBox.style.display = "block";
-      this.selectionBox.style.left = `${this.selectionStart.x - 2}px`;
-      this.selectionBox.style.top = `${Math.min(this.selectionStart.y, e.clientY)}px`;
-      this.selectionBox.style.width = "4px";
-      this.selectionBox.style.height = `${Math.abs(deltaY)}px`;
+    if (this.selectionStart.requiresBlockExit && !this.hasPointerMovedToAnotherBlock(e.clientX, e.clientY)) {
+      return;
     }
+    if (!this.isDraggingSelection) {
+      this.beginBlockSelectionGesture(e);
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    this.updateSelectionBox(e.clientY);
+    this.updateAutoScroll(e.clientY);
     if (this.updateThrottleTimer !== null) {
       return;
     }
@@ -9958,31 +10122,52 @@ var MultiSelectionManager = class {
     this.updateSelectionFromVerticalDrag(e.clientY);
   }
   /**
-   * 处理鼠标释放事件
+   * 处理指针释放事件
    */
-  handleMouseUp(e) {
-    if (this.isSelecting) {
-      if (!this.container) {
-        this.isSelecting = false;
-        this.selectionStart = null;
-        return;
-      }
-      this.container.classList.remove("selecting");
-      if (this.selectionBox) {
-        this.selectionBox.style.display = "none";
-      }
-      if (this.selectedBlocks.size === 0) {
-        this.isSelecting = false;
-        this.selectionStart = null;
-        return;
-      }
-      this.isSelecting = false;
-      this.selectionStart = null;
-      this.justFinishedSelecting = true;
-      setTimeout(() => {
-        this.justFinishedSelecting = false;
-      }, 300);
+  handlePointerUp(e) {
+    if (this.activePointerId !== null && this.activePointerId !== e.pointerId) {
+      return;
     }
+    if (this.isSelecting) {
+      this.finishSelectionGesture(e);
+    }
+  }
+  handlePointerCancel(e) {
+    if (this.activePointerId !== null && this.activePointerId !== e.pointerId) {
+      return;
+    }
+    if (this.isSelecting) {
+      this.finishSelectionGesture(e);
+    }
+  }
+  finishSelectionGesture(e) {
+    var _a;
+    if (this.container && this.activePointerId !== null) {
+      try {
+        this.container.releasePointerCapture(this.activePointerId);
+      } catch (e2) {
+      }
+    }
+    this.stopAutoScroll();
+    (_a = this.container) == null ? void 0 : _a.classList.remove("selecting");
+    this.hideSelectionBox();
+    if (e && this.isDraggingSelection) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const hadSelection = this.selectedBlocks.size > 0;
+    this.isSelecting = false;
+    this.isDraggingSelection = false;
+    this.selectionStart = null;
+    this.activePointerId = null;
+    this.autoScrollDirection = 0;
+    if (!hadSelection) {
+      return;
+    }
+    this.justFinishedSelecting = true;
+    setTimeout(() => {
+      this.justFinishedSelecting = false;
+    }, 300);
   }
   /**
    * 基于垂直拖拽更新选择的节点
@@ -9997,12 +10182,12 @@ var MultiSelectionManager = class {
     const startElement = this.selectionStart.startElement;
     if (!startBlockId || !startElement)
       return;
-    const blockElements = Array.from(this.container.querySelectorAll("[data-block-id]"));
+    const blockElements = Array.from(this.container.querySelectorAll(".workflowy-item[data-block-id]"));
     const sortedElements = blockElements.map((element) => ({
       element,
       blockId: element.dataset.blockId,
       rect: element.getBoundingClientRect()
-    })).filter((item) => item.blockId).sort((a, b) => a.rect.top - b.rect.top);
+    })).filter((item) => item.blockId && this.isVisibleBlockElement(item.element, item.rect)).sort((a, b) => a.rect.top - b.rect.top);
     if (sortedElements.length === 0)
       return;
     let currentBlockId = null;
@@ -10032,16 +10217,190 @@ var MultiSelectionManager = class {
     this.updateSelectionDisplay();
     this.onSelectionChange(Array.from(this.selectedBlocks));
   }
+  getSelectionGestureTarget(target, e) {
+    const editorElement = target.closest(".workflowy-content-editor");
+    if (editorElement) {
+      return {
+        contentElement: editorElement,
+        source: "editor",
+        requiresBlockExit: !e.altKey
+      };
+    }
+    const displayElement = target.closest(".workflowy-content-display");
+    if (displayElement) {
+      return {
+        contentElement: displayElement,
+        source: "display",
+        requiresBlockExit: false
+      };
+    }
+    const contentElement = target.closest(".workflowy-content");
+    if (contentElement) {
+      return {
+        contentElement,
+        source: "content",
+        requiresBlockExit: false
+      };
+    }
+    return null;
+  }
+  beginBlockSelectionGesture(e) {
+    var _a;
+    if (!this.selectionStart)
+      return;
+    this.isDraggingSelection = true;
+    this.lastEditorCursorState = (_a = this.selectionStart.cursorState) != null ? _a : null;
+    this.capturePointer(this.selectionStart.pointerId);
+    this.syncActiveTextareaContent();
+    this.clearNativeSelection();
+    this.container.classList.add("selecting");
+    this.updateSelectionBox(e.clientY);
+  }
+  capturePointer(pointerId) {
+    try {
+      this.container.setPointerCapture(pointerId);
+    } catch (e) {
+    }
+  }
+  hasPointerMovedToAnotherBlock(clientX, clientY) {
+    if (!this.selectionStart)
+      return false;
+    const elementAtPoint = document.elementFromPoint(clientX, clientY);
+    const blockAtPoint = elementAtPoint == null ? void 0 : elementAtPoint.closest(".workflowy-item[data-block-id]");
+    return !!blockAtPoint && blockAtPoint !== this.selectionStart.startElement;
+  }
+  updateSelectionBox(currentY) {
+    if (!this.selectionStart || !this.selectionBox)
+      return;
+    const deltaY = currentY - this.selectionStart.y;
+    this.selectionBox.style.display = "block";
+    this.selectionBox.style.left = `${this.selectionStart.x - 2}px`;
+    this.selectionBox.style.top = `${Math.min(this.selectionStart.y, currentY)}px`;
+    this.selectionBox.style.width = "4px";
+    this.selectionBox.style.height = `${Math.abs(deltaY)}px`;
+  }
+  hideSelectionBox() {
+    if (this.selectionBox) {
+      this.selectionBox.style.display = "none";
+    }
+  }
+  syncActiveTextareaContent() {
+    var _a;
+    if (!this.selectionStart || this.selectionStart.source !== "editor")
+      return;
+    const textarea = this.selectionStart.startElement.querySelector(".workflowy-content-editor") || ((_a = this.selectionStart.startElement.closest(".workflowy-item")) == null ? void 0 : _a.querySelector(".workflowy-content-editor"));
+    if (!textarea)
+      return;
+    const blockId = this.selectionStart.startBlockId;
+    const block = getAllBlocks(this.editor.getState().blocks).find((candidate) => candidate.id === blockId);
+    if (!block)
+      return;
+    const content = this.restoreHiddenBlockRef(textarea.value, block.content);
+    if (content !== block.content) {
+      this.editor.updateBlockContent(blockId, content);
+    }
+  }
+  restoreHiddenBlockRef(text, originalContent) {
+    const blockRefMatch = originalContent.match(/(\s+\^[a-zA-Z0-9-]+)\s*$/);
+    if (!blockRefMatch) {
+      return text;
+    }
+    return `${text}${blockRefMatch[1]}`;
+  }
+  getTextareaCursorState(textarea, blockId) {
+    return {
+      blockId,
+      selectionStart: textarea.selectionStart,
+      selectionEnd: textarea.selectionEnd
+    };
+  }
+  restoreTextareaCursor(cursorState) {
+    var _a;
+    const blockElement = (_a = this.container) == null ? void 0 : _a.querySelector(`.workflowy-item[data-block-id="${cursorState.blockId}"]`);
+    const textarea = blockElement == null ? void 0 : blockElement.querySelector(".workflowy-content-editor");
+    if (!textarea)
+      return;
+    textarea.focus();
+    textarea.setSelectionRange(cursorState.selectionStart, cursorState.selectionEnd);
+  }
+  clearNativeSelection() {
+    var _a;
+    const activeElement = document.activeElement;
+    if (activeElement instanceof HTMLTextAreaElement) {
+      activeElement.blur();
+    }
+    (_a = window.getSelection()) == null ? void 0 : _a.removeAllRanges();
+  }
+  isVisibleBlockElement(element, rect) {
+    if (!element.isConnected || rect.width === 0 || rect.height === 0 || element.classList.contains("workflowy-filtered-hidden")) {
+      return false;
+    }
+    const style = window.getComputedStyle(element);
+    return style.display !== "none" && style.visibility !== "hidden";
+  }
+  updateAutoScroll(pointerY) {
+    const scrollContainer = this.getScrollContainer();
+    if (!scrollContainer) {
+      this.stopAutoScroll();
+      return;
+    }
+    const rect = scrollContainer.getBoundingClientRect();
+    const edgeSize = 32;
+    let direction = 0;
+    if (pointerY < rect.top + edgeSize) {
+      direction = -1;
+    } else if (pointerY > rect.bottom - edgeSize) {
+      direction = 1;
+    }
+    this.autoScrollDirection = direction;
+    if (direction === 0) {
+      this.stopAutoScroll();
+      return;
+    }
+    if (this.autoScrollFrame === null) {
+      this.lastAutoScrollTime = this.getNow();
+      this.runAutoScroll();
+    }
+  }
+  runAutoScroll() {
+    const scrollContainer = this.getScrollContainer();
+    if (!scrollContainer || this.autoScrollDirection === 0 || !this.isDraggingSelection) {
+      this.stopAutoScroll();
+      return;
+    }
+    const now = this.getNow();
+    const elapsedMs = this.lastAutoScrollTime === null ? 1e3 / 60 : Math.min(now - this.lastAutoScrollTime, 32);
+    this.lastAutoScrollTime = now;
+    const pixelsPerSecond = 840;
+    scrollContainer.scrollTop += this.autoScrollDirection * pixelsPerSecond * (elapsedMs / 1e3);
+    this.updateSelectionBox(this.lastPointerY);
+    this.updateSelectionFromVerticalDrag(this.lastPointerY);
+    this.autoScrollFrame = requestAnimationFrame(() => this.runAutoScroll());
+  }
+  stopAutoScroll() {
+    if (this.autoScrollFrame !== null) {
+      cancelAnimationFrame(this.autoScrollFrame);
+      this.autoScrollFrame = null;
+    }
+    this.autoScrollDirection = 0;
+    this.lastAutoScrollTime = null;
+  }
+  getNow() {
+    return typeof performance !== "undefined" && typeof performance.now === "function" ? performance.now() : Date.now();
+  }
+  getScrollContainer() {
+    return this.container.classList.contains("workflowy-editor") ? this.container : this.container.closest(".workflowy-editor");
+  }
   /**
    * 根据选择框更新选中的节点（保留原方法作为备用）
    */
   updateSelectionFromBox(x, y, width, height) {
     const selectionRect = { left: x, top: y, right: x + width, bottom: y + height };
     const newSelection = /* @__PURE__ */ new Set();
-    const blockElements = this.container.querySelectorAll("[data-block-id]");
+    const blockElements = this.container.querySelectorAll(".workflowy-item[data-block-id]");
     blockElements.forEach((element) => {
       const rect = element.getBoundingClientRect();
-      if (this.isRectIntersecting(rect, selectionRect)) {
+      if (this.isVisibleBlockElement(element, rect) && this.isRectIntersecting(rect, selectionRect)) {
         const blockId = element.dataset.blockId;
         if (blockId) {
           newSelection.add(blockId);
@@ -10082,7 +10441,7 @@ var MultiSelectionManager = class {
       element.classList.remove("workflowy-selected");
     });
     this.selectedBlocks.forEach((blockId) => {
-      const element = this.container.querySelector(`[data-block-id="${blockId}"]`);
+      const element = this.container.querySelector(`.workflowy-item[data-block-id="${blockId}"]`);
       if (element) {
         element.classList.add("workflowy-selected");
       }
@@ -10120,6 +10479,7 @@ var MultiSelectionManager = class {
         e.stopImmediatePropagation();
         break;
       case "Escape":
+        this.restoreLastEditorCursor();
         this.clearSelection();
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -10292,9 +10652,18 @@ var MultiSelectionManager = class {
    * 清除所有选择
    */
   clearSelection() {
+    var _a;
     this.selectedBlocks.clear();
+    (_a = this.container) == null ? void 0 : _a.classList.remove("selecting");
     this.updateSelectionDisplay();
     this.onSelectionChange([]);
+  }
+  restoreLastEditorCursor() {
+    var _a;
+    const cursorState = this.lastEditorCursorState || ((_a = this.selectionStart) == null ? void 0 : _a.cursorState);
+    if (cursorState) {
+      this.restoreTextareaCursor(cursorState);
+    }
   }
   /**
    * 获取选中的节点ID列表
@@ -10458,14 +10827,18 @@ var MultiSelectionManager = class {
       window.clearTimeout(this.updateThrottleTimer);
       this.updateThrottleTimer = null;
     }
-    if (this.boundMouseDownHandler) {
-      this.container.removeEventListener("mousedown", this.boundMouseDownHandler, true);
+    this.stopAutoScroll();
+    if (this.boundPointerDownHandler) {
+      this.container.removeEventListener("pointerdown", this.boundPointerDownHandler, true);
     }
-    if (this.boundMouseMoveHandler) {
-      document.removeEventListener("mousemove", this.boundMouseMoveHandler);
+    if (this.boundPointerMoveHandler) {
+      document.removeEventListener("pointermove", this.boundPointerMoveHandler, true);
     }
-    if (this.boundMouseUpHandler) {
-      document.removeEventListener("mouseup", this.boundMouseUpHandler);
+    if (this.boundPointerUpHandler) {
+      document.removeEventListener("pointerup", this.boundPointerUpHandler, true);
+    }
+    if (this.boundPointerCancelHandler) {
+      document.removeEventListener("pointercancel", this.boundPointerCancelHandler, true);
     }
     if (this.boundKeyDownHandler) {
       document.removeEventListener("keydown", this.boundKeyDownHandler, true);
@@ -10670,6 +11043,9 @@ var ZoomManager = class {
   }
 };
 
+// src/ui/navigation-header.ts
+var import_obsidian8 = require("obsidian");
+
 // src/features/theme-manager.ts
 var THEME_DEFS = [
   { id: "default", key: "default" },
@@ -10762,7 +11138,11 @@ var ThemeManager = class {
 
 // src/ui/navigation-header.ts
 var NavigationHeader = class {
-  constructor() {
+  constructor(app, getSourcePath = () => "") {
+    this.app = app;
+    this.getSourcePath = getSourcePath;
+    this.tooltipComponent = new import_obsidian8.Component();
+    this.tooltipRenderToken = 0;
     this.headerElement = null;
     this.searchInput = null;
     this.searchClearButton = null;
@@ -10772,6 +11152,7 @@ var NavigationHeader = class {
     this.themeMenu = null;
     // 事件监听器管理 - 用于清理
     this.eventHandlers = [];
+    this.tooltipComponent.load();
   }
   /**
    * 添加事件监听器并记录以便清理
@@ -10962,13 +11343,16 @@ var NavigationHeader = class {
         delimiter.textContent = "\u203A";
       }
       const breadcrumb = breadcrumbs[i];
+      const ariaLabel = t("ui.nav.jumpToLevelWithTitle", { title: breadcrumb.title });
       const item = this.breadcrumbsContainer.createEl("a", {
         cls: "workflowy-breadcrumb-item",
         attr: {
+          "aria-label": ariaLabel,
           "data-block-id": breadcrumb.blockId || "root"
         }
       });
       item.textContent = breadcrumb.title;
+      this.addMarkdownTooltip(item, breadcrumb.title);
       this.addEventListener(item, "click", (e) => {
         e.preventDefault();
         if (this.onBreadcrumbClick) {
@@ -10979,6 +11363,43 @@ var NavigationHeader = class {
         item.classList.add("current");
       }
     }
+  }
+  addMarkdownTooltip(item, markdown) {
+    this.addEventListener(item, "mouseenter", () => {
+      void this.showMarkdownTooltip(item, markdown);
+    });
+    this.addEventListener(item, "focus", () => {
+      void this.showMarkdownTooltip(item, markdown);
+    });
+  }
+  async showMarkdownTooltip(target, markdown) {
+    const token = ++this.tooltipRenderToken;
+    if (!this.app) {
+      (0, import_obsidian8.displayTooltip)(target, markdown, { placement: "top" });
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    const wrapper = document.createElement("div");
+    wrapper.className = "workflowy-breadcrumb-markdown-tooltip-content";
+    try {
+      await import_obsidian8.MarkdownRenderer.render(
+        this.app,
+        markdown,
+        wrapper,
+        this.getSourcePath(),
+        this.tooltipComponent
+      );
+    } catch (e) {
+      wrapper.textContent = markdown;
+    }
+    if (token !== this.tooltipRenderToken || !target.matches(":hover") && document.activeElement !== target) {
+      return;
+    }
+    fragment.appendChild(wrapper);
+    (0, import_obsidian8.displayTooltip)(target, fragment, {
+      placement: "top",
+      classes: ["workflowy-breadcrumb-markdown-tooltip"]
+    });
   }
   /**
    * 显示头部
@@ -11080,12 +11501,13 @@ var NavigationHeader = class {
     this.themeManager = void 0;
     this.onBreadcrumbClick = void 0;
     this.onSearch = void 0;
+    this.tooltipComponent.unload();
   }
 };
 
 // src/ui/mobile-toolbar.ts
-var import_obsidian7 = require("obsidian");
-(0, import_obsidian7.addIcon)("workflowy-brackets", '<g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M38 12H22a6 6 0 0 0-6 6v64a6 6 0 0 0 6 6h16"/><path d="M62 12h16a6 6 0 0 1 6 6v64a6 6 0 0 1-6 6H62"/></g>');
+var import_obsidian9 = require("obsidian");
+(0, import_obsidian9.addIcon)("workflowy-brackets", '<g fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M38 12H22a6 6 0 0 0-6 6v64a6 6 0 0 0 6 6h16"/><path d="M62 12h16a6 6 0 0 1 6 6v64a6 6 0 0 1-6 6H62"/></g>');
 var _MobileToolbar = class {
   constructor() {
     this.toolbarEl = null;
@@ -11097,7 +11519,7 @@ var _MobileToolbar = class {
     this.pointerStartX = 0;
     this.pointerStartY = 0;
     this.callbacks = {};
-    if (!import_obsidian7.Platform.isMobile)
+    if (!import_obsidian9.Platform.isMobile)
       return;
   }
   setCallbacks(callbacks) {
@@ -11107,7 +11529,7 @@ var _MobileToolbar = class {
     this.getBlockElement = fn;
   }
   create(container) {
-    if (!import_obsidian7.Platform.isMobile)
+    if (!import_obsidian9.Platform.isMobile)
       return;
     this.toolbarEl = document.createElement("div");
     this.toolbarEl.className = "workflowy-mobile-toolbar";
@@ -11176,7 +11598,7 @@ var _MobileToolbar = class {
     btn.className = `workflowy-mobile-btn workflowy-mobile-btn-${config.id}`;
     btn.setAttribute("data-action", config.action);
     btn.setAttribute("aria-label", config.title);
-    (0, import_obsidian7.setIcon)(btn, config.icon);
+    (0, import_obsidian9.setIcon)(btn, config.icon);
     const needsGuard = !_MobileToolbar.NO_BLUR_GUARD_ACTIONS.has(config.action);
     btn.addEventListener("pointerdown", (e) => {
       e.preventDefault();
@@ -12003,7 +12425,7 @@ var SlashCommandMenu = class {
 };
 
 // src/features/mobile-dom-patcher.ts
-var import_obsidian8 = require("obsidian");
+var import_obsidian10 = require("obsidian");
 var _MobileDOMPatcher = class {
   constructor(deps) {
     this._needsFullSync = false;
@@ -12185,7 +12607,7 @@ var _MobileDOMPatcher = class {
         patchDeleteBlock: (blockId) => this.patchDeleteBlock(blockId)
       });
       newItem.focus();
-      if (import_obsidian8.Platform.isMobile) {
+      if (import_obsidian10.Platform.isMobile) {
         setTimeout(() => {
           newItem.getElement().scrollIntoView({ behavior: "smooth", block: "center" });
         }, 50);
@@ -12332,8 +12754,29 @@ var _MobileDOMPatcher = class {
 var MobileDOMPatcher = _MobileDOMPatcher;
 MobileDOMPatcher.INDENT_FLAG = "data-workflowy-indent-active";
 
+// src/features/readable-line-width.ts
+var READABLE_LINE_WIDTH_CONFIG_KEY = "readableLineLength";
+var READABLE_LINE_WIDTH_CLASS = "is-readable-line-width";
+function isReadableLineWidthEnabled(app) {
+  var _a;
+  try {
+    const getConfig = (_a = app.vault) == null ? void 0 : _a.getConfig;
+    return typeof getConfig === "function" && getConfig.call(app.vault, READABLE_LINE_WIDTH_CONFIG_KEY) === true;
+  } catch (_error) {
+    return false;
+  }
+}
+function shouldSyncReadableLineWidth(configKey) {
+  return configKey === void 0 || configKey === READABLE_LINE_WIDTH_CONFIG_KEY;
+}
+function syncReadableLineWidthClass(container, app) {
+  if (!container)
+    return;
+  container.classList.toggle(READABLE_LINE_WIDTH_CLASS, isReadableLineWidthEnabled(app));
+}
+
 // src/workflowy-view.ts
-var WorkflowyView = class extends import_obsidian9.FileView {
+var WorkflowyView = class extends import_obsidian11.FileView {
   constructor(leaf, plugin) {
     var _a, _b;
     super(leaf);
@@ -12369,6 +12812,9 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     this.lastHandledSubpathAt = 0;
     // 从 Markdown 视图切入时待恢复的源码光标
     this.pendingSourceCursor = null;
+    // Alt+↑/↓ zoom 导航的返回锚点栈。鼠标和面包屑 zoom 不使用该栈。
+    this.keyboardZoomAnchorStack = [];
+    this.pendingKeyboardZoomRestore = null;
     // 视图关闭标志（用于防止异步操作继续）
     this.isClosing = false;
     // wheel 事件处理器（用于正确移除事件监听器）
@@ -12383,7 +12829,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
      * 外部文件变化处理（由插件主类调用）
      * 当同一文件在其他视图（如 Markdown 编辑器）中被修改时触发
      */
-    this.onExternalFileChange = (0, import_obsidian9.debounce)(async () => {
+    this.onExternalFileChange = (0, import_obsidian11.debounce)(async () => {
       if (this.isSaving || !this.file) {
         return;
       }
@@ -12434,8 +12880,8 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     this.slashCommandMenu = new SlashCommandMenu(this.app, this.plugin.settings);
   }
   debugLog(...args) {
-    var _a, _b;
-    if (!((_b = (_a = this.plugin.settings) == null ? void 0 : _a.isolation) == null ? void 0 : _b.debugMode))
+    var _a, _b, _c;
+    if (!((_c = (_b = (_a = this.plugin) == null ? void 0 : _a.settings) == null ? void 0 : _b.isolation) == null ? void 0 : _c.debugMode))
       return;
     console.log(...args);
   }
@@ -12459,6 +12905,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       this.container.addClass("animations-enabled");
     }
     this.applyUIStyles();
+    this.syncReadableLineWidth();
     const uniqueId = `workflowy-container-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.container.setAttribute("id", uniqueId);
     this.containerSelector = `#${uniqueId}`;
@@ -12515,6 +12962,18 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     this.registerDomEvent(document, "keydown", (e) => {
       this.handleGlobalUndoRedoFallback(e);
     }, { capture: true });
+    const vaultEvents = this.app.vault;
+    if (typeof (vaultEvents == null ? void 0 : vaultEvents.on) === "function") {
+      this.registerEvent(
+        vaultEvents.on("config-changed", (key) => {
+          if (shouldSyncReadableLineWidth(key))
+            this.syncReadableLineWidth();
+        })
+      );
+    }
+    this.registerEvent(
+      this.app.workspace.on("css-change", () => this.syncReadableLineWidth())
+    );
     this.createNavigationHeader();
     this.editorContainer = this.container.createDiv("workflowy-editor");
     this.debugLog("[WorkflowyView] Editor container created in onOpen()");
@@ -12758,11 +13217,17 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     }
     containerEl.style.setProperty("--workflowy-font-family", fontFamily);
   }
+  syncReadableLineWidth() {
+    syncReadableLineWidthClass(this.container, this.app);
+  }
   /**
    * 创建导航头部（面包屑+搜索框）
    */
   createNavigationHeader() {
-    this.navigationHeader = new NavigationHeader();
+    this.navigationHeader = new NavigationHeader(this.app, () => {
+      var _a;
+      return ((_a = this.file) == null ? void 0 : _a.path) || "";
+    });
     this.navigationHeader.create(this.container);
     if (this.themeManager) {
       this.navigationHeader.setThemeManager(this.themeManager);
@@ -12806,6 +13271,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     if (!this.zoomManager) {
       return;
     }
+    this.clearKeyboardZoomAnchors();
     if (blockId === null) {
       this.zoomManager.zoomOut();
     } else {
@@ -12817,39 +13283,64 @@ var WorkflowyView = class extends import_obsidian9.FileView {
    */
   handleZoomChange(zoomedBlockId) {
     this.updateNavigationHeader();
-    this.renderBlocks();
-    if (zoomedBlockId) {
-      setTimeout(() => {
-        const item = this.blockElements.get(zoomedBlockId);
-        if (item) {
-          item.focus();
-          const element = item.getElement();
-          const contentEl = element.querySelector(".workflowy-content-editor, .workflowy-content");
-          if (contentEl) {
-            if (contentEl instanceof HTMLTextAreaElement) {
-              contentEl.setSelectionRange(contentEl.value.length, contentEl.value.length);
-            } else {
-              const selection = window.getSelection();
-              if (selection) {
-                const range = document.createRange();
-                try {
-                  if (contentEl.childNodes.length > 0) {
-                    range.selectNodeContents(contentEl);
-                    range.collapse(false);
-                  } else {
-                    range.setStart(contentEl, 0);
-                    range.setEnd(contentEl, 0);
-                  }
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                } catch (error) {
-                  console.error("[WorkflowyView] Error setting cursor to end:", error);
-                }
-              }
-            }
-          }
+    void this.renderBlocks().then(() => {
+      if (this.isClosing)
+        return;
+      const restoreAnchor = this.pendingKeyboardZoomRestore;
+      this.pendingKeyboardZoomRestore = null;
+      if (restoreAnchor) {
+        this.debugLog("[WorkflowyView] Restoring keyboard zoom anchor:", restoreAnchor);
+        if (this.blockElements.has(restoreAnchor.blockId)) {
+          this.restoreCursor(restoreAnchor);
+          return;
         }
-      }, 100);
+        this.debugLog("[WorkflowyView] Keyboard zoom anchor not rendered, falling back:", {
+          zoomedBlockId,
+          anchorBlockId: restoreAnchor.blockId
+        });
+        this.focusZoomFallback(zoomedBlockId, restoreAnchor.blockId);
+        return;
+      }
+      if (zoomedBlockId) {
+        this.focusZoomTargetAtEnd(zoomedBlockId);
+      }
+    });
+  }
+  focusZoomFallback(zoomedBlockId, anchorBlockId) {
+    const fallbackItem = (zoomedBlockId ? this.blockElements.get(zoomedBlockId) : null) || this.blockElements.get(anchorBlockId) || this.blockElements.values().next().value;
+    if (fallbackItem) {
+      fallbackItem.focus();
+    }
+  }
+  focusZoomTargetAtEnd(blockId) {
+    const item = this.blockElements.get(blockId);
+    if (!item)
+      return;
+    item.focus();
+    const element = item.getElement();
+    const contentEl = element.querySelector(".workflowy-content-editor, .workflowy-content");
+    if (!contentEl)
+      return;
+    if (contentEl instanceof HTMLTextAreaElement) {
+      contentEl.setSelectionRange(contentEl.value.length, contentEl.value.length);
+      return;
+    }
+    const selection = window.getSelection();
+    if (!selection)
+      return;
+    const range = document.createRange();
+    try {
+      if (contentEl.childNodes.length > 0) {
+        range.selectNodeContents(contentEl);
+        range.collapse(false);
+      } else {
+        range.setStart(contentEl, 0);
+        range.setEnd(contentEl, 0);
+      }
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } catch (error) {
+      console.error("[WorkflowyView] Error setting cursor to end:", error);
     }
   }
   async loadFile(filePath) {
@@ -12858,12 +13349,12 @@ var WorkflowyView = class extends import_obsidian9.FileView {
     let file;
     if (typeof filePath === "string") {
       const abstractFile = this.app.vault.getAbstractFileByPath(filePath);
-      if (!(abstractFile instanceof import_obsidian9.TFile)) {
+      if (!(abstractFile instanceof import_obsidian11.TFile)) {
         console.error("[WorkflowyView] File not found or not a TFile:", filePath);
         return;
       }
       file = abstractFile;
-    } else if (filePath instanceof import_obsidian9.TFile) {
+    } else if (filePath instanceof import_obsidian11.TFile) {
       file = filePath;
     } else {
       console.error("[WorkflowyView] Invalid filePath type:", typeof filePath, filePath);
@@ -13008,7 +13499,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
         item.destroy();
       }
     });
-    const hasEditingReuse = import_obsidian9.Platform.isMobile && reusableItems.size > 0 && Array.from(reusableItems.values()).some((r) => {
+    const hasEditingReuse = import_obsidian11.Platform.isMobile && reusableItems.size > 0 && Array.from(reusableItems.values()).some((r) => {
       const textarea = r.element.querySelector(".workflowy-content-editor");
       return textarea && document.activeElement === textarea;
     });
@@ -13178,7 +13669,12 @@ var WorkflowyView = class extends import_obsidian9.FileView {
   /**
    * 处理bullet点击事件（缩放功能）
    */
-  handleBulletClick(blockId) {
+  handleBulletClick(blockId, options) {
+    if ((options == null ? void 0 : options.source) === "keyboard") {
+      this.prepareKeyboardZoomRestore(options);
+    } else {
+      this.clearKeyboardZoomAnchors();
+    }
     this.editor.focusBlock(blockId);
     this.lastFocusedBlockId = blockId;
     if (!this.zoomManager) {
@@ -13190,6 +13686,40 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       this.zoomManager.zoomIn(blockId);
     }
   }
+  prepareKeyboardZoomRestore(options) {
+    if (!this.zoomManager)
+      return;
+    if (options.direction === "in" && options.cursorState) {
+      this.keyboardZoomAnchorStack.push(options.cursorState);
+      this.pendingKeyboardZoomRestore = options.cursorState;
+      this.debugLog("[WorkflowyView] Pushed keyboard zoom anchor:", options.cursorState);
+      return;
+    }
+    if (options.direction === "out") {
+      const zoomedBlockId = this.zoomManager.getZoomedBlockId();
+      if (zoomedBlockId) {
+        this.pendingKeyboardZoomRestore = this.popKeyboardZoomAnchor(zoomedBlockId);
+        this.debugLog("[WorkflowyView] Popped keyboard zoom anchor:", this.pendingKeyboardZoomRestore);
+      }
+    }
+  }
+  popKeyboardZoomAnchor(blockId) {
+    for (let i = this.keyboardZoomAnchorStack.length - 1; i >= 0; i--) {
+      if (this.keyboardZoomAnchorStack[i].blockId === blockId) {
+        const [anchor] = this.keyboardZoomAnchorStack.splice(i, this.keyboardZoomAnchorStack.length - i);
+        return anchor;
+      }
+    }
+    return {
+      blockId,
+      offset: 0,
+      selectionLength: 0
+    };
+  }
+  clearKeyboardZoomAnchors() {
+    this.keyboardZoomAnchorStack = [];
+    this.pendingKeyboardZoomRestore = null;
+  }
   /**
    * 渲染块列表
    * 方案 E：支持复用包含异步嵌入的 OutlineItem，避免闪烁
@@ -13197,7 +13727,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
   renderBlockList(blocks, container, parentCompletedTodo = false, reusableItems) {
     var _a;
     const renderPromises = [];
-    const useFragment = !import_obsidian9.Platform.isMobile;
+    const useFragment = !import_obsidian11.Platform.isMobile;
     const target = useFragment ? document.createDocumentFragment() : container;
     let orderedListCounter = 0;
     for (let i = 0; i < blocks.length; i++) {
@@ -13232,7 +13762,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
             // 重新渲染并保存（异步）
             () => this.multiSelectionManager,
             // 多选管理器获取函数
-            (blockId) => this.handleBulletClick(blockId),
+            (blockId, options) => this.handleBulletClick(blockId, options),
             // bullet点击回调（用于zoom）
             () => {
               var _a2;
@@ -13258,7 +13788,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
           if (renderPromise) {
             renderPromises.push(renderPromise);
           }
-          if (import_obsidian9.Platform.isMobile && this.mobileDOMPatcher) {
+          if (import_obsidian11.Platform.isMobile && this.mobileDOMPatcher) {
             blockItem.setMobilePatcher({
               patchNewBlock: (afterBlockId, initialContent) => this.mobileDOMPatcher.patchNewBlock(afterBlockId, initialContent),
               patchDeleteBlock: (blockId) => this.mobileDOMPatcher.patchDeleteBlock(blockId)
@@ -13295,7 +13825,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
             }
           });
         }
-        if (reusable && import_obsidian9.Platform.isMobile) {
+        if (reusable && import_obsidian11.Platform.isMobile) {
           const textarea = element.querySelector(".workflowy-content-editor");
           if (textarea && textarea !== document.activeElement) {
             textarea.focus();
@@ -13408,7 +13938,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
           async () => await this.renderBlocksAndSave(),
           // 重新渲染并保存
           () => this.multiSelectionManager,
-          (blockId) => this.handleBulletClick(blockId),
+          (blockId, options) => this.handleBulletClick(blockId, options),
           () => {
             var _a2;
             return ((_a2 = this.zoomManager) == null ? void 0 : _a2.getZoomedBlockId()) || null;
@@ -13430,7 +13960,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
         element = blockItem.getElement();
         blockItem.onViewUndo = () => this.executeUndo();
         blockItem.onViewRedo = () => this.executeRedo();
-        if (import_obsidian9.Platform.isMobile && this.mobileDOMPatcher) {
+        if (import_obsidian11.Platform.isMobile && this.mobileDOMPatcher) {
           blockItem.setMobilePatcher({
             patchNewBlock: (afterBlockId, initialContent) => this.mobileDOMPatcher.patchNewBlock(afterBlockId, initialContent),
             patchDeleteBlock: (blockId) => this.mobileDOMPatcher.patchDeleteBlock(blockId)
@@ -13444,7 +13974,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       }
       container.appendChild(element);
       this.blockElements.set(block.id, blockItem);
-      if (reusable && import_obsidian9.Platform.isMobile) {
+      if (reusable && import_obsidian11.Platform.isMobile) {
         const textarea = element.querySelector(".workflowy-content-editor");
         if (textarea && textarea !== document.activeElement) {
           textarea.focus();
@@ -13533,7 +14063,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return true;
     }
-    if (import_obsidian9.Platform.isMobile && this.mobileDOMPatcher) {
+    if (import_obsidian11.Platform.isMobile && this.mobileDOMPatcher) {
       if (this.mobileDOMPatcher.patchUndoRedo(blocksAfter)) {
         this.restoreCursor(cursorState, blocksAfter, blocksBefore);
         return true;
@@ -13569,7 +14099,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return true;
     }
-    if (import_obsidian9.Platform.isMobile && this.mobileDOMPatcher) {
+    if (import_obsidian11.Platform.isMobile && this.mobileDOMPatcher) {
       if (this.mobileDOMPatcher.patchUndoRedo(blocksAfter)) {
         this.restoreCursor(cursorState, blocksAfter, blocksBefore);
         return true;
@@ -14199,7 +14729,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
   patchCollapse(blockId, collapsed) {
     var _a;
     this.saveAllEditingContent({ saveFile: false });
-    if (((_a = this.zoomManager) == null ? void 0 : _a.getZoomedBlockId()) || import_obsidian9.Platform.isMobile) {
+    if (((_a = this.zoomManager) == null ? void 0 : _a.getZoomedBlockId()) || import_obsidian11.Platform.isMobile) {
       void this.renderBlocks();
       return;
     }
@@ -14482,7 +15012,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
    */
   initMobileToolbar() {
     var _a, _b;
-    if (!import_obsidian9.Platform.isMobile) {
+    if (!import_obsidian11.Platform.isMobile) {
       return;
     }
     if (((_b = (_a = this.plugin.settings) == null ? void 0 : _a.features) == null ? void 0 : _b.mobileToolbar) === false) {
@@ -14506,7 +15036,7 @@ var WorkflowyView = class extends import_obsidian9.FileView {
       slashCommandMenu: this.slashCommandMenu,
       onBlockUpdate: (blockId, content) => this.handleBlockUpdate(blockId, content),
       onBlockFocus: (blockId) => this.handleBlockFocus(blockId),
-      onBulletClick: (blockId) => this.handleBulletClick(blockId),
+      onBulletClick: (blockId, options) => this.handleBulletClick(blockId, options),
       onViewUndo: () => {
         void this.executeUndo();
       },
@@ -15630,10 +16160,10 @@ var DEFAULT_SETTINGS = {
 };
 
 // src/settings-tab.ts
-var import_obsidian13 = require("obsidian");
+var import_obsidian15 = require("obsidian");
 
 // src/daily-notes/daily-notes-file-service.ts
-var import_obsidian10 = require("obsidian");
+var import_obsidian12 = require("obsidian");
 var DailyNotesFileService = class {
   constructor(app, configProvider, options) {
     this.app = app;
@@ -15713,7 +16243,7 @@ var DailyNotesFileService = class {
       return [];
     return this.app.vault.getMarkdownFiles().filter((file) => {
       const cache = this.app.metadataCache.getFileCache(file);
-      return !!cache && ((0, import_obsidian10.getAllTags)(cache) || []).includes(target);
+      return !!cache && ((0, import_obsidian12.getAllTags)(cache) || []).includes(target);
     });
   }
   canIncludeExplicitTarget(file) {
@@ -15731,7 +16261,7 @@ var DailyNotesFileService = class {
         if (!target)
           return false;
         const cache = this.app.metadataCache.getFileCache(file);
-        return !!cache && ((0, import_obsidian10.getAllTags)(cache) || []).includes(target);
+        return !!cache && ((0, import_obsidian12.getAllTags)(cache) || []).includes(target);
       }
       case "daily":
       default:
@@ -15741,14 +16271,14 @@ var DailyNotesFileService = class {
   filterByRange(files) {
     if (this.options.selectedRange === "all")
       return files;
-    const now = (0, import_obsidian10.moment)();
+    const now = (0, import_obsidian12.moment)();
     return files.filter((file) => this.isInRange(this.getFileDate(file), now, this.options.selectedRange));
   }
   getFileDate(file) {
     if (this.options.selectionMode === "daily") {
       return this.configProvider.getDateFromFile(file);
     }
-    return (0, import_obsidian10.moment)(file.stat[this.getRangeTimeField()]);
+    return (0, import_obsidian12.moment)(file.stat[this.getRangeTimeField()]);
   }
   isInRange(fileDate, now, range) {
     if (!fileDate.isValid())
@@ -15761,21 +16291,21 @@ var DailyNotesFileService = class {
       case "year":
         return fileDate.isSame(now, "year");
       case "last-week":
-        return fileDate.isBetween((0, import_obsidian10.moment)(now).subtract(1, "week").startOf("week"), (0, import_obsidian10.moment)(now).subtract(1, "week").endOf("week"), void 0, "[]");
+        return fileDate.isBetween((0, import_obsidian12.moment)(now).subtract(1, "week").startOf("week"), (0, import_obsidian12.moment)(now).subtract(1, "week").endOf("week"), void 0, "[]");
       case "last-month":
-        return fileDate.isBetween((0, import_obsidian10.moment)(now).subtract(1, "month").startOf("month"), (0, import_obsidian10.moment)(now).subtract(1, "month").endOf("month"), void 0, "[]");
+        return fileDate.isBetween((0, import_obsidian12.moment)(now).subtract(1, "month").startOf("month"), (0, import_obsidian12.moment)(now).subtract(1, "month").endOf("month"), void 0, "[]");
       case "last-year":
-        return fileDate.isBetween((0, import_obsidian10.moment)(now).subtract(1, "year").startOf("year"), (0, import_obsidian10.moment)(now).subtract(1, "year").endOf("year"), void 0, "[]");
+        return fileDate.isBetween((0, import_obsidian12.moment)(now).subtract(1, "year").startOf("year"), (0, import_obsidian12.moment)(now).subtract(1, "year").endOf("year"), void 0, "[]");
       case "quarter":
         return fileDate.isSame(now, "quarter");
       case "last-quarter":
-        return fileDate.isBetween((0, import_obsidian10.moment)(now).subtract(1, "quarter").startOf("quarter"), (0, import_obsidian10.moment)(now).subtract(1, "quarter").endOf("quarter"), void 0, "[]");
+        return fileDate.isBetween((0, import_obsidian12.moment)(now).subtract(1, "quarter").startOf("quarter"), (0, import_obsidian12.moment)(now).subtract(1, "quarter").endOf("quarter"), void 0, "[]");
       case "custom": {
         const custom = this.options.customRange;
         if (!custom)
           return false;
-        const start = (0, import_obsidian10.moment)(custom.start).startOf("day");
-        const end = (0, import_obsidian10.moment)(custom.end).endOf("day");
+        const start = (0, import_obsidian12.moment)(custom.start).startOf("day");
+        const end = (0, import_obsidian12.moment)(custom.end).endOf("day");
         return start.isValid() && end.isValid() && fileDate.isBetween(start, end, void 0, "[]");
       }
       default:
@@ -15821,7 +16351,7 @@ var DailyNotesFileService = class {
   }
   normalizeFolder(folder) {
     const trimmed = folder.trim().replace(/^\/+|\/+$/g, "");
-    return trimmed ? (0, import_obsidian10.normalizePath)(trimmed) : "";
+    return trimmed ? (0, import_obsidian12.normalizePath)(trimmed) : "";
   }
   normalizeTag(tag) {
     const trimmed = tag.trim();
@@ -15849,7 +16379,7 @@ function normalizeDailyNotesPreset(preset) {
   const target = preset.type === "folder" ? preset.target.trim().replace(/^\/+|\/+$/g, "") : preset.target.trim().replace(/^#/, "");
   return {
     type: preset.type,
-    target: target ? (0, import_obsidian10.normalizePath)(target) : ""
+    target: target ? (0, import_obsidian12.normalizePath)(target) : ""
   };
 }
 function isSamePreset(left, right) {
@@ -15858,10 +16388,10 @@ function isSamePreset(left, right) {
 }
 
 // src/license/license-renderer.ts
-var import_obsidian12 = require("obsidian");
+var import_obsidian14 = require("obsidian");
 
 // src/license/license-manager.ts
-var import_obsidian11 = require("obsidian");
+var import_obsidian13 = require("obsidian");
 var LicenseManager = class {
   constructor(plugin) {
     this.TRIAL_DAYS = 7;
@@ -15956,15 +16486,15 @@ hQIDAQAB
       const trimmedKey = licenseKey.trim();
       const isValid = await this.validateLicenseKey(trimmedKey);
       if (!isValid) {
-        new import_obsidian11.Notice(t("license.notice.keyInvalid"));
+        new import_obsidian13.Notice(t("license.notice.keyInvalid"));
         return false;
       }
       await this.saveLicenseData({ licenseKey: trimmedKey });
-      new import_obsidian11.Notice(t("license.notice.keyActivated"));
+      new import_obsidian13.Notice(t("license.notice.keyActivated"));
       return true;
     } catch (error) {
       console.error("\u8BBE\u7F6E\u6CE8\u518C\u7801\u5931\u8D25:", error);
-      new import_obsidian11.Notice(t("license.notice.keyVerifyFailed"));
+      new import_obsidian13.Notice(t("license.notice.keyVerifyFailed"));
       return false;
     }
   }
@@ -15977,10 +16507,10 @@ hQIDAQAB
     if (licenseInfo.isPlusUser)
       return;
     if (licenseInfo.trialDaysLeft > 0) {
-      new import_obsidian11.Notice(t("license.trialRemaining", { days: licenseInfo.trialDaysLeft }), 5e3);
+      new import_obsidian13.Notice(t("license.trialRemaining", { days: licenseInfo.trialDaysLeft }), 5e3);
       return;
     }
-    new import_obsidian11.Notice(t("license.trialExpired"), 7e3);
+    new import_obsidian13.Notice(t("license.trialExpired"), 7e3);
   }
   async getLicenseKey() {
     const licenseData = await this.loadLicenseData();
@@ -15989,7 +16519,7 @@ hQIDAQAB
   async clearLicense() {
     await this.saveLicenseData({ licenseKey: void 0 });
     localStorage.removeItem(`${this.STORAGE_KEY}-trial`);
-    new import_obsidian11.Notice(t("license.notice.cleared"));
+    new import_obsidian13.Notice(t("license.notice.cleared"));
   }
   async processConsoleCommand(cmd) {
     const raw = cmd.trim();
@@ -16074,12 +16604,12 @@ hQIDAQAB
   }
   async getDeviceId() {
     try {
-      if (!import_obsidian11.Platform.isMobile) {
+      if (!import_obsidian13.Platform.isMobile) {
         const macAddress = this.getRealMacAddress();
         if (macAddress && macAddress !== "UNKNOWN")
           return `DESKTOP-MAC:${macAddress}`;
       }
-      const persistentId = await this.getOrCreatePersistentDeviceId(import_obsidian11.Platform.isMobile ? "mobile" : "desktop-fallback");
+      const persistentId = await this.getOrCreatePersistentDeviceId(import_obsidian13.Platform.isMobile ? "mobile" : "desktop-fallback");
       if (persistentId)
         return persistentId;
       const fingerprint = await this.getRuntimeFallbackFingerprint();
@@ -16090,7 +16620,7 @@ hQIDAQAB
     }
   }
   getRealMacAddress() {
-    if (import_obsidian11.Platform.isMobile)
+    if (import_obsidian13.Platform.isMobile)
       return "UNKNOWN";
     try {
       const os = require("os");
@@ -16324,10 +16854,10 @@ async function createLicenseContent(container, plugin) {
       const sequence = await licenseManager.generateSequenceNumber();
       sequenceInput.input.value = sequence;
       await copyText(sequence);
-      new import_obsidian12.Notice(t("license.notice.serialGenerated"));
+      new import_obsidian14.Notice(t("license.notice.serialGenerated"));
     } catch (error) {
       console.error("\u751F\u6210\u5E8F\u5217\u53F7\u5931\u8D25:", error);
-      new import_obsidian12.Notice(t("license.notice.serialFailed"));
+      new import_obsidian14.Notice(t("license.notice.serialFailed"));
     }
   });
   const licenseRow = renderInputRow(panel, {
@@ -16341,7 +16871,7 @@ async function createLicenseContent(container, plugin) {
   licenseRow.button.addEventListener("click", async () => {
     const licenseKey = licenseRow.input.value.trim();
     if (!licenseKey) {
-      new import_obsidian12.Notice(t("license.notice.enterKey"));
+      new import_obsidian14.Notice(t("license.notice.enterKey"));
       return;
     }
     await licenseManager.setLicenseKey(licenseKey);
@@ -16379,7 +16909,7 @@ function renderStatus(container, isPlusUser, trialDaysLeft) {
     }
   });
   const statusIcon = status.createSpan({ cls: "workflowy-license-status-icon", attr: { "aria-hidden": "true" } });
-  (0, import_obsidian12.setIcon)(statusIcon, isPlusUser ? "badge-check" : trialDaysLeft > 0 ? "clock" : "badge-alert");
+  (0, import_obsidian14.setIcon)(statusIcon, isPlusUser ? "badge-check" : trialDaysLeft > 0 ? "clock" : "badge-alert");
   status.createSpan({ text: statusText });
 }
 function renderInputRow(container, options) {
@@ -16449,7 +16979,7 @@ async function resolveImageSrc(plugin, localFileName, fallbackUrl) {
   const manifest = plugin.manifest;
   if (!manifest.dir)
     return fallbackUrl;
-  const localPath = (0, import_obsidian12.normalizePath)(`${manifest.dir}/image/${localFileName}`);
+  const localPath = (0, import_obsidian14.normalizePath)(`${manifest.dir}/image/${localFileName}`);
   try {
     const exists = await plugin.app.vault.adapter.exists(localPath);
     if (!exists)
@@ -16469,7 +16999,7 @@ async function copyText(text) {
 }
 
 // src/settings-tab.ts
-var WorkflowySettingTab = class extends import_obsidian13.PluginSettingTab {
+var WorkflowySettingTab = class extends import_obsidian15.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -16488,204 +17018,204 @@ var WorkflowySettingTab = class extends import_obsidian13.PluginSettingTab {
     hotkeyInfo.createEl("p", {
       text: t("settings.hotkeys.info2")
     });
-    const openHotkeysButton = new import_obsidian13.Setting(containerEl).setName(t("settings.hotkeys.openButton.name")).setDesc(t("settings.hotkeys.openButton.desc")).addButton((button) => button.setButtonText(t("settings.hotkeys.openButton.button")).setCta().onClick(() => {
+    const openHotkeysButton = new import_obsidian15.Setting(containerEl).setName(t("settings.hotkeys.openButton.name")).setDesc(t("settings.hotkeys.openButton.desc")).addButton((button) => button.setButtonText(t("settings.hotkeys.openButton.button")).setCta().onClick(() => {
       this.app.setting.open();
       this.app.setting.openTabById("hotkeys");
     }));
     containerEl.createEl("h2", { text: t("settings.headers.ui") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.indentSize.name")).setDesc(t("settings.ui.indentSize.desc")).addSlider((slider) => slider.setLimits(10, 60, 5).setValue(this.plugin.settings.ui.indentSize).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.indentSize.name")).setDesc(t("settings.ui.indentSize.desc")).addSlider((slider) => slider.setLimits(10, 60, 5).setValue(this.plugin.settings.ui.indentSize).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.ui.indentSize = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.showBullets.name")).setDesc(t("settings.ui.showBullets.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showBullets).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.showBullets.name")).setDesc(t("settings.ui.showBullets.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showBullets).onChange(async (value) => {
       this.plugin.settings.ui.showBullets = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.showCollapseIndicators.name")).setDesc(t("settings.ui.showCollapseIndicators.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showCollapseIndicators).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.showCollapseIndicators.name")).setDesc(t("settings.ui.showCollapseIndicators.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showCollapseIndicators).onChange(async (value) => {
       this.plugin.settings.ui.showCollapseIndicators = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.showVerticalLines.name")).setDesc(t("settings.ui.showVerticalLines.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showVerticalLines).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.showVerticalLines.name")).setDesc(t("settings.ui.showVerticalLines.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.showVerticalLines).onChange(async (value) => {
       this.plugin.settings.ui.showVerticalLines = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.animationsEnabled.name")).setDesc(t("settings.ui.animationsEnabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.animationsEnabled).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.animationsEnabled.name")).setDesc(t("settings.ui.animationsEnabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.ui.animationsEnabled).onChange(async (value) => {
       this.plugin.settings.ui.animationsEnabled = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.fontAndLineHeight.name")).setDesc(t("settings.ui.fontAndLineHeight.desc"));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.ui.fontFamily.name")).setDesc(t("settings.ui.fontFamily.desc")).addDropdown((dropdown) => dropdown.addOption("theme", t("settings.ui.fontFamily.options.theme")).addOption("system", t("settings.ui.fontFamily.options.system")).addOption("custom", t("settings.ui.fontFamily.options.custom")).setValue(this.plugin.settings.ui.fontFamily).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.fontAndLineHeight.name")).setDesc(t("settings.ui.fontAndLineHeight.desc"));
+    new import_obsidian15.Setting(containerEl).setName(t("settings.ui.fontFamily.name")).setDesc(t("settings.ui.fontFamily.desc")).addDropdown((dropdown) => dropdown.addOption("theme", t("settings.ui.fontFamily.options.theme")).addOption("system", t("settings.ui.fontFamily.options.system")).addOption("custom", t("settings.ui.fontFamily.options.custom")).setValue(this.plugin.settings.ui.fontFamily).onChange(async (value) => {
       this.plugin.settings.ui.fontFamily = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
       this.display();
     }));
     if (this.plugin.settings.ui.fontFamily === "custom") {
-      new import_obsidian13.Setting(containerEl).setName(t("settings.ui.customFontFamily.name")).setDesc(t("settings.ui.customFontFamily.desc")).addText((text) => text.setPlaceholder(t("settings.ui.customFontFamily.placeholder")).setValue(this.plugin.settings.ui.customFontFamily).onChange(async (value) => {
+      new import_obsidian15.Setting(containerEl).setName(t("settings.ui.customFontFamily.name")).setDesc(t("settings.ui.customFontFamily.desc")).addText((text) => text.setPlaceholder(t("settings.ui.customFontFamily.placeholder")).setValue(this.plugin.settings.ui.customFontFamily).onChange(async (value) => {
         this.plugin.settings.ui.customFontFamily = value;
         await this.plugin.saveSettings();
         this.plugin.refreshAllViews();
       }));
     }
     containerEl.createEl("h2", { text: t("settings.headers.features") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.slashCommand.name")).setDesc(t("settings.features.slashCommand.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.slashCommand).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.slashCommand.name")).setDesc(t("settings.features.slashCommand.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.slashCommand).onChange(async (value) => {
       this.plugin.settings.features.slashCommand = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.tagSuggest.name")).setDesc(t("settings.features.tagSuggest.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.tagSuggest).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.tagSuggest.name")).setDesc(t("settings.features.tagSuggest.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.tagSuggest).onChange(async (value) => {
       this.plugin.settings.features.tagSuggest = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.linkSuggest.name")).setDesc(t("settings.features.linkSuggest.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.linkSuggest).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.linkSuggest.name")).setDesc(t("settings.features.linkSuggest.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.linkSuggest).onChange(async (value) => {
       this.plugin.settings.features.linkSuggest = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.mobileToolbar.name")).setDesc(t("settings.features.mobileToolbar.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.mobileToolbar).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.mobileToolbar.name")).setDesc(t("settings.features.mobileToolbar.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.mobileToolbar).onChange(async (value) => {
       this.plugin.settings.features.mobileToolbar = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
     containerEl.createEl("h2", { text: t("settings.headers.editor") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.editor.autoSave.name")).setDesc(t("settings.editor.autoSave.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.editor.autoSave).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.editor.autoSave.name")).setDesc(t("settings.editor.autoSave.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.editor.autoSave).onChange(async (value) => {
       this.plugin.settings.editor.autoSave = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.editor.autoSaveDelay.name")).setDesc(t("settings.editor.autoSaveDelay.desc")).addSlider((slider) => slider.setLimits(500, 5e3, 500).setValue(this.plugin.settings.editor.autoSaveDelay).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.editor.autoSaveDelay.name")).setDesc(t("settings.editor.autoSaveDelay.desc")).addSlider((slider) => slider.setLimits(500, 5e3, 500).setValue(this.plugin.settings.editor.autoSaveDelay).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.editor.autoSaveDelay = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.editor.placeholder.name")).setDesc(t("settings.editor.placeholder.desc")).addText((text) => text.setPlaceholder(t("settings.editor.placeholder.placeholder")).setValue(this.plugin.settings.editor.placeholder).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.editor.placeholder.name")).setDesc(t("settings.editor.placeholder.desc")).addText((text) => text.setPlaceholder(t("settings.editor.placeholder.placeholder")).setValue(this.plugin.settings.editor.placeholder).onChange(async (value) => {
       this.plugin.settings.editor.placeholder = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.editor.renderMode.name")).setDesc(t("settings.editor.renderMode.desc")).addDropdown((dropdown) => dropdown.addOption("source", t("settings.editor.renderMode.options.source")).addOption("live-preview", t("settings.editor.renderMode.options.livePreview")).setValue(this.plugin.settings.editor.renderMode).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.editor.renderMode.name")).setDesc(t("settings.editor.renderMode.desc")).addDropdown((dropdown) => dropdown.addOption("source", t("settings.editor.renderMode.options.source")).addOption("live-preview", t("settings.editor.renderMode.options.livePreview")).setValue(this.plugin.settings.editor.renderMode).onChange(async (value) => {
       this.plugin.settings.editor.renderMode = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.editor.attachmentPath.name")).setDesc(t("settings.editor.attachmentPath.desc")).addDropdown((dropdown) => dropdown.addOption("default", t("settings.editor.attachmentPath.options.default")).addOption("custom", t("settings.editor.attachmentPath.options.custom")).setValue(this.plugin.settings.editor.attachmentPath).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.editor.attachmentPath.name")).setDesc(t("settings.editor.attachmentPath.desc")).addDropdown((dropdown) => dropdown.addOption("default", t("settings.editor.attachmentPath.options.default")).addOption("custom", t("settings.editor.attachmentPath.options.custom")).setValue(this.plugin.settings.editor.attachmentPath).onChange(async (value) => {
       this.plugin.settings.editor.attachmentPath = value;
       await this.plugin.saveSettings();
       this.display();
     }));
     if (this.plugin.settings.editor.attachmentPath === "custom") {
-      new import_obsidian13.Setting(containerEl).setName(t("settings.editor.customAttachmentPath.name")).setDesc(t("settings.editor.customAttachmentPath.desc")).addText((text) => text.setPlaceholder(t("settings.editor.customAttachmentPath.placeholder")).setValue(this.plugin.settings.editor.customAttachmentPath).onChange(async (value) => {
+      new import_obsidian15.Setting(containerEl).setName(t("settings.editor.customAttachmentPath.name")).setDesc(t("settings.editor.customAttachmentPath.desc")).addText((text) => text.setPlaceholder(t("settings.editor.customAttachmentPath.placeholder")).setValue(this.plugin.settings.editor.customAttachmentPath).onChange(async (value) => {
         this.plugin.settings.editor.customAttachmentPath = value;
         await this.plugin.saveSettings();
       }));
     }
     containerEl.createEl("h2", { text: t("settings.headers.search") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.search.mode.name")).setDesc(t("settings.search.mode.desc")).addDropdown((dropdown) => dropdown.addOption("highlight", t("settings.search.mode.options.highlight")).addOption("filter", t("settings.search.mode.options.filter")).setValue(this.plugin.settings.search.mode).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.search.mode.name")).setDesc(t("settings.search.mode.desc")).addDropdown((dropdown) => dropdown.addOption("highlight", t("settings.search.mode.options.highlight")).addOption("filter", t("settings.search.mode.options.filter")).setValue(this.plugin.settings.search.mode).onChange(async (value) => {
       this.plugin.settings.search.mode = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.search.caseSensitive.name")).setDesc(t("settings.search.caseSensitive.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.search.caseSensitive).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.search.caseSensitive.name")).setDesc(t("settings.search.caseSensitive.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.search.caseSensitive).onChange(async (value) => {
       this.plugin.settings.search.caseSensitive = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.search.autoExpandMatches.name")).setDesc(t("settings.search.autoExpandMatches.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.search.autoExpandMatches).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.search.autoExpandMatches.name")).setDesc(t("settings.search.autoExpandMatches.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.search.autoExpandMatches).onChange(async (value) => {
       this.plugin.settings.search.autoExpandMatches = value;
       await this.plugin.saveSettings();
     }));
     containerEl.createEl("h2", { text: t("settings.headers.dragDrop") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dragDrop.enabled.name")).setDesc(t("settings.dragDrop.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.enabled).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dragDrop.enabled.name")).setDesc(t("settings.dragDrop.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.enabled).onChange(async (value) => {
       this.plugin.settings.dragDrop.enabled = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dragDrop.showDropIndicators.name")).setDesc(t("settings.dragDrop.showDropIndicators.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.showDropIndicators).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dragDrop.showDropIndicators.name")).setDesc(t("settings.dragDrop.showDropIndicators.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.showDropIndicators).onChange(async (value) => {
       this.plugin.settings.dragDrop.showDropIndicators = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dragDrop.allowNestedDrop.name")).setDesc(t("settings.dragDrop.allowNestedDrop.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.allowNestedDrop).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dragDrop.allowNestedDrop.name")).setDesc(t("settings.dragDrop.allowNestedDrop.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dragDrop.allowNestedDrop).onChange(async (value) => {
       this.plugin.settings.dragDrop.allowNestedDrop = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.crossDocumentDrag.name")).setDesc(t("settings.features.crossDocumentDrag.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.crossDocumentDrag).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.crossDocumentDrag.name")).setDesc(t("settings.features.crossDocumentDrag.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.crossDocumentDrag).onChange(async (value) => {
       this.plugin.settings.features.crossDocumentDrag = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.features.autoBlockId.name")).setDesc(t("settings.features.autoBlockId.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.autoBlockId).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.features.autoBlockId.name")).setDesc(t("settings.features.autoBlockId.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.features.autoBlockId).onChange(async (value) => {
       this.plugin.settings.features.autoBlockId = value;
       await this.plugin.saveSettings();
     }));
     containerEl.createEl("h2", { text: t("settings.headers.collapseState") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.collapseState.enabled.name")).setDesc(t("settings.collapseState.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.collapseState.enabled).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.collapseState.enabled.name")).setDesc(t("settings.collapseState.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.collapseState.enabled).onChange(async (value) => {
       this.plugin.settings.collapseState.enabled = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.collapseState.marker.name")).setDesc(t("settings.collapseState.marker.desc")).addText((text) => text.setPlaceholder(t("settings.collapseState.marker.placeholder")).setValue(this.plugin.settings.collapseState.marker).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.collapseState.marker.name")).setDesc(t("settings.collapseState.marker.desc")).addText((text) => text.setPlaceholder(t("settings.collapseState.marker.placeholder")).setValue(this.plugin.settings.collapseState.marker).onChange(async (value) => {
       if (value.trim()) {
         this.plugin.settings.collapseState.marker = value.trim();
         await this.plugin.saveSettings();
       }
     }));
     containerEl.createEl("h2", { text: t("settings.headers.thino") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.thino.enabled.name")).setDesc(t("settings.thino.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.thino.enabled).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.thino.enabled.name")).setDesc(t("settings.thino.enabled.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.thino.enabled).onChange(async (value) => {
       this.plugin.settings.thino.enabled = value;
       await this.plugin.saveSettings();
       this.plugin.refreshAllViews();
       this.display();
     }));
     if (this.plugin.settings.thino.enabled) {
-      new import_obsidian13.Setting(containerEl).setName(t("settings.thino.autoTimestamp.name")).setDesc(t("settings.thino.autoTimestamp.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.thino.autoTimestamp).onChange(async (value) => {
+      new import_obsidian15.Setting(containerEl).setName(t("settings.thino.autoTimestamp.name")).setDesc(t("settings.thino.autoTimestamp.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.thino.autoTimestamp).onChange(async (value) => {
         this.plugin.settings.thino.autoTimestamp = value;
         await this.plugin.saveSettings();
       }));
-      new import_obsidian13.Setting(containerEl).setName(t("settings.thino.timestampFormat.name")).setDesc(t("settings.thino.timestampFormat.desc")).addDropdown((dropdown) => dropdown.addOption("HH:mm", t("settings.thino.timestampFormat.options.hhmm")).addOption("HH:mm:ss", t("settings.thino.timestampFormat.options.hhmmss")).setValue(this.plugin.settings.thino.timestampFormat).onChange(async (value) => {
+      new import_obsidian15.Setting(containerEl).setName(t("settings.thino.timestampFormat.name")).setDesc(t("settings.thino.timestampFormat.desc")).addDropdown((dropdown) => dropdown.addOption("HH:mm", t("settings.thino.timestampFormat.options.hhmm")).addOption("HH:mm:ss", t("settings.thino.timestampFormat.options.hhmmss")).setValue(this.plugin.settings.thino.timestampFormat).onChange(async (value) => {
         this.plugin.settings.thino.timestampFormat = value;
         await this.plugin.saveSettings();
       }));
     }
     renderLicenseSettings(containerEl, this.plugin);
     containerEl.createEl("h2", { text: t("settings.headers.dailyNotes") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.showRibbon.name")).setDesc(t("settings.dailyNotes.showRibbon.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.showRibbon).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.showRibbon.name")).setDesc(t("settings.dailyNotes.showRibbon.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.showRibbon).onChange(async (value) => {
       this.plugin.settings.dailyNotes.showRibbon = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.initialBatchSize.name")).setDesc(t("settings.dailyNotes.initialBatchSize.desc")).addSlider((slider) => slider.setLimits(1, 10, 1).setValue(this.plugin.settings.dailyNotes.initialBatchSize).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.initialBatchSize.name")).setDesc(t("settings.dailyNotes.initialBatchSize.desc")).addSlider((slider) => slider.setLimits(1, 10, 1).setValue(this.plugin.settings.dailyNotes.initialBatchSize).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.dailyNotes.initialBatchSize = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.unloadDelay.name")).setDesc(t("settings.dailyNotes.unloadDelay.desc")).addSlider((slider) => slider.setLimits(500, 1e4, 500).setValue(this.plugin.settings.dailyNotes.unloadDelay).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.unloadDelay.name")).setDesc(t("settings.dailyNotes.unloadDelay.desc")).addSlider((slider) => slider.setLimits(500, 1e4, 500).setValue(this.plugin.settings.dailyNotes.unloadDelay).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.dailyNotes.unloadDelay = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.createTodayOnStartup.name")).setDesc(t("settings.dailyNotes.createTodayOnStartup.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.createTodayOnStartup).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.createTodayOnStartup.name")).setDesc(t("settings.dailyNotes.createTodayOnStartup.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.createTodayOnStartup).onChange(async (value) => {
       this.plugin.settings.dailyNotes.createTodayOnStartup = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.openOnStartup.name")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.openOnStartup).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.openOnStartup.name")).addToggle((toggle) => toggle.setValue(this.plugin.settings.dailyNotes.openOnStartup).onChange(async (value) => {
       this.plugin.settings.dailyNotes.openOnStartup = value;
       await this.plugin.saveSettings();
     }));
     containerEl.createEl("h3", { text: t("settings.headers.dailyNotesFallback") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.fallbackFolder.name")).setDesc(t("settings.dailyNotes.fallbackFolder.desc")).addText((text) => text.setPlaceholder(t("settings.dailyNotes.fallbackFolder.placeholder")).setValue(this.plugin.settings.dailyNotes.fallback.folder).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.fallbackFolder.name")).setDesc(t("settings.dailyNotes.fallbackFolder.desc")).addText((text) => text.setPlaceholder(t("settings.dailyNotes.fallbackFolder.placeholder")).setValue(this.plugin.settings.dailyNotes.fallback.folder).onChange(async (value) => {
       this.plugin.settings.dailyNotes.fallback.folder = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.fallbackFormat.name")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.plugin.settings.dailyNotes.fallback.format).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.fallbackFormat.name")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.plugin.settings.dailyNotes.fallback.format).onChange(async (value) => {
       this.plugin.settings.dailyNotes.fallback.format = value || "YYYY-MM-DD";
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.fallbackTemplate.name")).setDesc(t("settings.dailyNotes.fallbackTemplate.desc")).addText((text) => text.setPlaceholder(t("settings.dailyNotes.fallbackTemplate.placeholder")).setValue(this.plugin.settings.dailyNotes.fallback.template).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.fallbackTemplate.name")).setDesc(t("settings.dailyNotes.fallbackTemplate.desc")).addText((text) => text.setPlaceholder(t("settings.dailyNotes.fallbackTemplate.placeholder")).setValue(this.plugin.settings.dailyNotes.fallback.template).onChange(async (value) => {
       this.plugin.settings.dailyNotes.fallback.template = value;
       await this.plugin.saveSettings();
     }));
     if (this.plugin.settings.dailyNotes.presets.length > 0) {
       containerEl.createEl("h3", { text: t("settings.headers.dailyNotesPresets") });
       this.plugin.settings.dailyNotes.presets.forEach((preset) => {
-        new import_obsidian13.Setting(containerEl).setName(t("settings.dailyNotes.presetLabel", {
+        new import_obsidian15.Setting(containerEl).setName(t("settings.dailyNotes.presetLabel", {
           type: preset.type === "folder" ? t("settings.dailyNotes.presetFolder") : t("settings.dailyNotes.presetTag"),
           target: preset.target
         })).addButton((button) => button.setButtonText(t("common.button.delete")).setWarning().onClick(async () => {
@@ -16699,23 +17229,23 @@ var WorkflowySettingTab = class extends import_obsidian13.PluginSettingTab {
       });
     }
     containerEl.createEl("h2", { text: t("settings.headers.advanced") });
-    new import_obsidian13.Setting(containerEl).setName(t("settings.advanced.strictMode.name")).setDesc(t("settings.advanced.strictMode.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.strictMode).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.advanced.strictMode.name")).setDesc(t("settings.advanced.strictMode.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.strictMode).onChange(async (value) => {
       this.plugin.settings.isolation.strictMode = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.advanced.enableAssertions.name")).setDesc(t("settings.advanced.enableAssertions.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.enableAssertions).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.advanced.enableAssertions.name")).setDesc(t("settings.advanced.enableAssertions.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.enableAssertions).onChange(async (value) => {
       this.plugin.settings.isolation.enableAssertions = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.advanced.debugMode.name")).setDesc(t("settings.advanced.debugMode.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.debugMode).onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.advanced.debugMode.name")).setDesc(t("settings.advanced.debugMode.desc")).addToggle((toggle) => toggle.setValue(this.plugin.settings.isolation.debugMode).onChange(async (value) => {
       this.plugin.settings.isolation.debugMode = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.advanced.healthCheckInterval.name")).setDesc(t("settings.advanced.healthCheckInterval.desc")).addSlider((slider) => slider.setLimits(1e4, 12e4, 1e4).setValue(this.plugin.settings.isolation.healthCheckInterval).setDynamicTooltip().onChange(async (value) => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.advanced.healthCheckInterval.name")).setDesc(t("settings.advanced.healthCheckInterval.desc")).addSlider((slider) => slider.setLimits(1e4, 12e4, 1e4).setValue(this.plugin.settings.isolation.healthCheckInterval).setDynamicTooltip().onChange(async (value) => {
       this.plugin.settings.isolation.healthCheckInterval = value;
       await this.plugin.saveSettings();
     }));
-    new import_obsidian13.Setting(containerEl).setName(t("settings.reset.name")).setDesc(t("settings.reset.desc")).addButton((button) => button.setButtonText(t("common.button.reset")).setWarning().onClick(async () => {
+    new import_obsidian15.Setting(containerEl).setName(t("settings.reset.name")).setDesc(t("settings.reset.desc")).addButton((button) => button.setButtonText(t("common.button.reset")).setWarning().onClick(async () => {
       if (confirm(t("settings.reset.confirm"))) {
         await this.plugin.resetSettings();
         this.display();
@@ -16725,13 +17255,15 @@ var WorkflowySettingTab = class extends import_obsidian13.PluginSettingTab {
 };
 
 // src/daily-notes/workflowy-daily-notes-view.ts
-var import_obsidian18 = require("obsidian");
+var import_obsidian20 = require("obsidian");
 
 // src/ui/daily-notes-outline-renderer.ts
-var import_obsidian14 = require("obsidian");
+var import_obsidian16 = require("obsidian");
 var DailyNotesOutlineRenderer = class {
   constructor(containerEl, config) {
     this.config = config;
+    this.tooltipComponent = new import_obsidian16.Component();
+    this.tooltipRenderToken = 0;
     this.blockElements = /* @__PURE__ */ new Map();
     this.verticalLinesManager = null;
     this.multiSelectionManager = null;
@@ -16740,6 +17272,8 @@ var DailyNotesOutlineRenderer = class {
     this.mobileDOMPatcher = null;
     this.isCreatingRootBlock = false;
     this.isCreatingZoomChildBlock = false;
+    this.keyboardZoomAnchorStack = [];
+    this.pendingKeyboardZoomRestore = null;
     this.handlePaste = async (event) => {
       var _a;
       const hasImage = !!((_a = event.clipboardData) == null ? void 0 : _a.files) && Array.from(event.clipboardData.files).some((file) => file.type.startsWith("image/"));
@@ -16757,20 +17291,28 @@ var DailyNotesOutlineRenderer = class {
       await this.fileDropHandler.handleDrop(event, false);
     };
     this.containerEl = containerEl;
+    this.tooltipComponent.load();
     this.editorContainer = this.containerEl.createDiv("workflowy-container");
     this.editorContainer.createDiv("workflowy-editor");
+    syncReadableLineWidthClass(this.editorContainer, this.config.app);
     const uniqueId = `daily-notes-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     this.editorContainer.dataset.dailyNotesId = uniqueId;
     this.containerSelector = `[data-daily-notes-id="${uniqueId}"]`;
     this.slashCommandMenu = new SlashCommandMenu(this.config.app, this.config.settings);
     this.zoomManager = new ZoomManager(this.config.editor, () => this.config.sourcePath.split("/").pop() || this.config.sourcePath);
     this.zoomManager.setOnZoomChange(() => {
-      void this.render();
+      void this.handleZoomChange();
     });
     this.applyTheme();
     this.registerKeyboardEvents();
     this.registerFileDropAndPaste();
     this.initMobileToolbar();
+  }
+  debugLog(...args) {
+    var _a, _b;
+    if (!((_b = (_a = this.config.settings) == null ? void 0 : _a.isolation) == null ? void 0 : _b.debugMode))
+      return;
+    console.log(...args);
   }
   async render() {
     var _a, _b, _c, _d;
@@ -16798,7 +17340,7 @@ var DailyNotesOutlineRenderer = class {
         item.destroy();
       }
     });
-    const hasEditingReuse = import_obsidian14.Platform.isMobile && reusableItems.size > 0 && Array.from(reusableItems.values()).some(({ element }) => {
+    const hasEditingReuse = import_obsidian16.Platform.isMobile && reusableItems.size > 0 && Array.from(reusableItems.values()).some(({ element }) => {
       const textarea = element.querySelector(".workflowy-content-editor");
       return !!textarea && document.activeElement === textarea;
     });
@@ -16838,7 +17380,24 @@ var DailyNotesOutlineRenderer = class {
   zoomOut() {
     if (!this.zoomManager.isZoomed())
       return;
+    this.clearKeyboardZoomAnchors();
     this.zoomManager.zoomOut();
+  }
+  async handleZoomChange() {
+    await this.render();
+    const restoreAnchor = this.pendingKeyboardZoomRestore;
+    this.pendingKeyboardZoomRestore = null;
+    if (!restoreAnchor)
+      return;
+    this.debugLog("[DailyNotesOutlineRenderer] Restoring keyboard zoom anchor:", restoreAnchor);
+    if (this.blockElements.has(restoreAnchor.blockId)) {
+      this.restoreCursor(restoreAnchor);
+      return;
+    }
+    this.debugLog("[DailyNotesOutlineRenderer] Keyboard zoom anchor not rendered, falling back:", restoreAnchor.blockId);
+    const fallbackItem = this.blockElements.values().next().value;
+    if (fallbackItem)
+      fallbackItem.focus();
   }
   refreshTheme() {
     this.applyTheme();
@@ -17121,7 +17680,7 @@ var DailyNotesOutlineRenderer = class {
   }
   initMobileToolbar() {
     var _a;
-    if (!import_obsidian14.Platform.isMobile || ((_a = this.config.settings.features) == null ? void 0 : _a.mobileToolbar) === false)
+    if (!import_obsidian16.Platform.isMobile || ((_a = this.config.settings.features) == null ? void 0 : _a.mobileToolbar) === false)
       return;
     this.mobileDOMPatcher = new MobileDOMPatcher({
       editor: this.config.editor,
@@ -17144,7 +17703,7 @@ var DailyNotesOutlineRenderer = class {
         var _a2, _b;
         return (_b = (_a2 = this.config).onBlockFocus) == null ? void 0 : _b.call(_a2, blockId);
       },
-      onBulletClick: (blockId) => this.handleBulletClick(blockId),
+      onBulletClick: (blockId, options) => this.handleBulletClick(blockId, options),
       onViewUndo: () => {
         void this.executeUndo();
       },
@@ -17382,14 +17941,16 @@ var DailyNotesOutlineRenderer = class {
       if (index > 0) {
         navigationEl.createSpan({ cls: "workflowy-daily-note-zoom-delimiter", text: "\u203A" });
       }
+      const ariaLabel = t("ui.nav.jumpToLevelWithTitle", { title: breadcrumb.title });
       const item = navigationEl.createEl("button", {
         cls: "workflowy-daily-note-zoom-item",
         text: breadcrumb.title,
         attr: {
           type: "button",
-          title: t("ui.nav.jumpToLevel")
+          "aria-label": ariaLabel
         }
       });
+      this.addMarkdownTooltip(item, breadcrumb.title);
       item.toggleClass("current", index === breadcrumbs.length - 1);
       item.addEventListener("click", (event) => {
         event.preventDefault();
@@ -17398,9 +17959,43 @@ var DailyNotesOutlineRenderer = class {
       });
     });
   }
+  addMarkdownTooltip(item, markdown) {
+    item.addEventListener("mouseenter", () => {
+      void this.showMarkdownTooltip(item, markdown);
+    });
+    item.addEventListener("focus", () => {
+      void this.showMarkdownTooltip(item, markdown);
+    });
+  }
+  async showMarkdownTooltip(target, markdown) {
+    const token = ++this.tooltipRenderToken;
+    const fragment = document.createDocumentFragment();
+    const wrapper = document.createElement("div");
+    wrapper.className = "workflowy-breadcrumb-markdown-tooltip-content";
+    try {
+      await import_obsidian16.MarkdownRenderer.render(
+        this.config.app,
+        markdown,
+        wrapper,
+        this.config.sourcePath,
+        this.tooltipComponent
+      );
+    } catch (e) {
+      wrapper.textContent = markdown;
+    }
+    if (token !== this.tooltipRenderToken || !target.matches(":hover") && document.activeElement !== target) {
+      return;
+    }
+    fragment.appendChild(wrapper);
+    (0, import_obsidian16.displayTooltip)(target, fragment, {
+      placement: "top",
+      classes: ["workflowy-breadcrumb-markdown-tooltip"]
+    });
+  }
   handleZoomBreadcrumbClick(breadcrumb) {
     if (breadcrumb.blockId === this.zoomManager.getZoomedBlockId())
       return;
+    this.clearKeyboardZoomAnchors();
     if (!breadcrumb.blockId) {
       this.zoomManager.zoomOut();
       return;
@@ -17477,7 +18072,7 @@ var DailyNotesOutlineRenderer = class {
       this.focusRenderedBlock(newBlock.id);
     } catch (error) {
       console.error("[DailyNotesOutlineRenderer] Failed to create root block:", error);
-      new import_obsidian14.Notice(t("ui.dailyNotesOutline.addNodeFailed"));
+      new import_obsidian16.Notice(t("ui.dailyNotesOutline.addNodeFailed"));
     } finally {
       this.isCreatingRootBlock = false;
       if (hintEl.isConnected)
@@ -17498,7 +18093,7 @@ var DailyNotesOutlineRenderer = class {
       this.focusRenderedBlock(newBlock.id);
     } catch (error) {
       console.error("[DailyNotesOutlineRenderer] Failed to create zoom child block:", error);
-      new import_obsidian14.Notice(t("ui.dailyNotesOutline.addNodeFailed"));
+      new import_obsidian16.Notice(t("ui.dailyNotesOutline.addNodeFailed"));
     } finally {
       this.isCreatingZoomChildBlock = false;
       if (hintEl.isConnected)
@@ -17547,8 +18142,13 @@ var DailyNotesOutlineRenderer = class {
     this.config.editor.toggleCollapse(blockId);
     void this.renderAndPersist();
   }
-  handleBulletClick(blockId) {
+  handleBulletClick(blockId, options) {
     var _a, _b;
+    if ((options == null ? void 0 : options.source) === "keyboard") {
+      this.prepareKeyboardZoomRestore(options);
+    } else {
+      this.clearKeyboardZoomAnchors();
+    }
     this.config.editor.focusBlock(blockId);
     (_b = (_a = this.config).onBlockFocus) == null ? void 0 : _b.call(_a, blockId);
     if (this.zoomManager.getZoomedBlockId() === blockId) {
@@ -17556,6 +18156,38 @@ var DailyNotesOutlineRenderer = class {
       return;
     }
     this.zoomManager.zoomIn(blockId);
+  }
+  prepareKeyboardZoomRestore(options) {
+    if (options.direction === "in" && options.cursorState) {
+      this.keyboardZoomAnchorStack.push(options.cursorState);
+      this.pendingKeyboardZoomRestore = options.cursorState;
+      this.debugLog("[DailyNotesOutlineRenderer] Pushed keyboard zoom anchor:", options.cursorState);
+      return;
+    }
+    if (options.direction === "out") {
+      const zoomedBlockId = this.zoomManager.getZoomedBlockId();
+      if (zoomedBlockId) {
+        this.pendingKeyboardZoomRestore = this.popKeyboardZoomAnchor(zoomedBlockId);
+        this.debugLog("[DailyNotesOutlineRenderer] Popped keyboard zoom anchor:", this.pendingKeyboardZoomRestore);
+      }
+    }
+  }
+  popKeyboardZoomAnchor(blockId) {
+    for (let i = this.keyboardZoomAnchorStack.length - 1; i >= 0; i--) {
+      if (this.keyboardZoomAnchorStack[i].blockId === blockId) {
+        const [anchor] = this.keyboardZoomAnchorStack.splice(i, this.keyboardZoomAnchorStack.length - i);
+        return anchor;
+      }
+    }
+    return {
+      blockId,
+      offset: 0,
+      selectionLength: 0
+    };
+  }
+  clearKeyboardZoomAnchors() {
+    this.keyboardZoomAnchorStack = [];
+    this.pendingKeyboardZoomRestore = null;
   }
   renderBlockList(blocks, container, parentCompletedTodo = false, reusableItems) {
     const renderPromises = [];
@@ -17589,7 +18221,7 @@ var DailyNotesOutlineRenderer = class {
               void this.renderAndPersist();
             },
             () => this.multiSelectionManager,
-            (blockId) => this.handleBulletClick(blockId),
+            (blockId, options) => this.handleBulletClick(blockId, options),
             () => this.zoomManager.getZoomedBlockId(),
             this.config.app,
             this.config.sourcePath,
@@ -17598,7 +18230,7 @@ var DailyNotesOutlineRenderer = class {
             orderIndex,
             this.slashCommandMenu
           );
-          if (import_obsidian14.Platform.isMobile && this.mobileDOMPatcher) {
+          if (import_obsidian16.Platform.isMobile && this.mobileDOMPatcher) {
             blockItem.setMobilePatcher({
               patchNewBlock: (afterBlockId, initialContent) => this.mobileDOMPatcher.patchNewBlock(afterBlockId, initialContent),
               patchDeleteBlock: (blockId) => this.mobileDOMPatcher.patchDeleteBlock(blockId)
@@ -17618,7 +18250,7 @@ var DailyNotesOutlineRenderer = class {
         element.toggleClass("child-of-completed-todo", parentCompletedTodo);
         container.appendChild(element);
         this.blockElements.set(block.id, blockItem);
-        if (reusable && import_obsidian14.Platform.isMobile) {
+        if (reusable && import_obsidian16.Platform.isMobile) {
           const textarea = element.querySelector(".workflowy-content-editor");
           if (textarea && textarea !== document.activeElement) {
             textarea.focus();
@@ -17656,7 +18288,7 @@ var DailyNotesOutlineRenderer = class {
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return;
     }
-    if (import_obsidian14.Platform.isMobile && ((_a = this.mobileDOMPatcher) == null ? void 0 : _a.patchUndoRedo(blocksAfter))) {
+    if (import_obsidian16.Platform.isMobile && ((_a = this.mobileDOMPatcher) == null ? void 0 : _a.patchUndoRedo(blocksAfter))) {
       await this.config.onPersist();
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return;
@@ -17680,7 +18312,7 @@ var DailyNotesOutlineRenderer = class {
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return;
     }
-    if (import_obsidian14.Platform.isMobile && ((_a = this.mobileDOMPatcher) == null ? void 0 : _a.patchUndoRedo(blocksAfter))) {
+    if (import_obsidian16.Platform.isMobile && ((_a = this.mobileDOMPatcher) == null ? void 0 : _a.patchUndoRedo(blocksAfter))) {
       await this.config.onPersist();
       this.restoreCursor(cursorState, blocksAfter, blocksBefore);
       return;
@@ -17826,6 +18458,7 @@ var DailyNotesOutlineRenderer = class {
     this.destroyRenderedItems();
     this.zoomManager.destroy();
     this.slashCommandMenu.destroy();
+    this.tooltipComponent.unload();
     this.clearZoomNavigation();
     this.editorContainer.empty();
   }
@@ -17884,6 +18517,7 @@ var DailyNoteSection = class {
     };
     this.containerEl = options.parentEl.createDiv({ cls: "workflowy-daily-note-section" });
     this.containerEl.dataset.path = options.file.path;
+    syncReadableLineWidthClass(this.containerEl, options.plugin.app);
     const headerEl = this.containerEl.createDiv({ cls: "workflowy-daily-note-header" });
     this.collapseButton = headerEl.createEl("button", {
       cls: "workflowy-daily-note-collapse",
@@ -18379,10 +19013,10 @@ var DailyNoteSection = class {
 };
 
 // src/daily-notes/daily-notes-config-provider.ts
-var import_obsidian16 = require("obsidian");
+var import_obsidian18 = require("obsidian");
 
 // node_modules/obsidian-daily-notes-interface/dist/index.mjs
-var import_obsidian15 = require("obsidian");
+var import_obsidian17 = require("obsidian");
 function validateString(value) {
   return typeof value === "string" ? value : "";
 }
@@ -18504,13 +19138,13 @@ async function ensureFolderExists(path) {
 async function getNotePath(directory, filename) {
   if (!filename.endsWith(".md"))
     filename += ".md";
-  const path = (0, import_obsidian15.normalizePath)(join(directory, filename));
+  const path = (0, import_obsidian17.normalizePath)(join(directory, filename));
   await ensureFolderExists(path);
   return path;
 }
 async function getTemplateInfo(template) {
   const { metadataCache, vault } = window.app;
-  const templatePath = (0, import_obsidian15.normalizePath)(template);
+  const templatePath = (0, import_obsidian17.normalizePath)(template);
   if (templatePath === "/")
     return ["", null];
   try {
@@ -18518,7 +19152,7 @@ async function getTemplateInfo(template) {
     return [await vault.cachedRead(templateFile), window.app.foldManager.load(templateFile)];
   } catch (err) {
     console.error(`Failed to read the daily note template '${templatePath}'`, err);
-    new import_obsidian15.Notice("Failed to read the daily note template");
+    new import_obsidian17.Notice("Failed to read the daily note template");
     return ["", null];
   }
 }
@@ -18587,18 +19221,18 @@ async function createDailyNote(date) {
     return createdFile;
   } catch (err) {
     console.error(`Failed to create file: '${normalizedPath}'`, err);
-    new import_obsidian15.Notice("Unable to create new file.");
+    new import_obsidian17.Notice("Unable to create new file.");
   }
 }
 function getAllDailyNotes() {
   const { vault } = window.app;
   const { folder = "" } = getDailyNoteSettings();
-  const dailyNotesFolder = vault.getAbstractFileByPath((0, import_obsidian15.normalizePath)(folder));
-  if (!(dailyNotesFolder instanceof import_obsidian15.TFolder))
+  const dailyNotesFolder = vault.getAbstractFileByPath((0, import_obsidian17.normalizePath)(folder));
+  if (!(dailyNotesFolder instanceof import_obsidian17.TFolder))
     throw new DailyNotesFolderMissingError("Failed to find daily notes folder");
   const dailyNotes3 = {};
-  import_obsidian15.Vault.recurseChildren(dailyNotesFolder, (note) => {
-    if (note instanceof import_obsidian15.TFile) {
+  import_obsidian17.Vault.recurseChildren(dailyNotesFolder, (note) => {
+    if (note instanceof import_obsidian17.TFile) {
       const date = getDateFromFile(note, "day");
       if (date) {
         const dateString = getDateUID(date, "day");
@@ -18654,7 +19288,7 @@ var DailyNotesConfigProvider = class {
     return this.scanDailyNotes(config);
   }
   getDailyNoteForDate(date) {
-    const targetDate = (0, import_obsidian16.moment)(date).startOf("day");
+    const targetDate = (0, import_obsidian18.moment)(date).startOf("day");
     if (!targetDate.isValid())
       return null;
     const config = this.getConfig();
@@ -18663,10 +19297,10 @@ var DailyNotesConfigProvider = class {
     ) || null;
   }
   getTodayNote() {
-    return this.getDailyNoteForDate((0, import_obsidian16.moment)());
+    return this.getDailyNoteForDate((0, import_obsidian18.moment)());
   }
   async createDailyNoteForDate(date) {
-    const targetDate = (0, import_obsidian16.moment)(date).startOf("day");
+    const targetDate = (0, import_obsidian18.moment)(date).startOf("day");
     if (!targetDate.isValid())
       return null;
     const existing = this.getDailyNoteForDate(targetDate);
@@ -18677,19 +19311,19 @@ var DailyNotesConfigProvider = class {
       return await createDailyNote(targetDate) || null;
     }
     const relativePath = `${targetDate.format(config.format)}.md`;
-    const path = (0, import_obsidian16.normalizePath)(config.folder ? `${config.folder}/${relativePath}` : relativePath);
+    const path = (0, import_obsidian18.normalizePath)(config.folder ? `${config.folder}/${relativePath}` : relativePath);
     const parentPath = path.split("/").slice(0, -1).join("/");
     if (parentPath)
       await this.ensureFolder(parentPath);
     return await this.app.vault.create(path, await this.getTemplateContent(config.template, config.format, targetDate));
   }
   async createTodayNote() {
-    return await this.createDailyNoteForDate((0, import_obsidian16.moment)());
+    return await this.createDailyNoteForDate((0, import_obsidian18.moment)());
   }
   getDateFromFile(file, config = this.getConfig()) {
     const relativePath = config.folder && file.path.startsWith(`${config.folder}/`) ? file.path.slice(config.folder.length + 1) : file.path;
     const pathWithoutExtension = relativePath.replace(/\.md$/i, "");
-    return (0, import_obsidian16.moment)(pathWithoutExtension, config.format, true);
+    return (0, import_obsidian18.moment)(pathWithoutExtension, config.format, true);
   }
   isDailyNote(file) {
     const config = this.getConfig();
@@ -18705,7 +19339,7 @@ var DailyNotesConfigProvider = class {
   }
   normalizeConfiguredPath(path) {
     const trimmed = (path || "").trim().replace(/^\/+|\/+$/g, "");
-    return trimmed ? (0, import_obsidian16.normalizePath)(trimmed) : "";
+    return trimmed ? (0, import_obsidian18.normalizePath)(trimmed) : "";
   }
   isInFolder(file, folder) {
     var _a;
@@ -18715,37 +19349,37 @@ var DailyNotesConfigProvider = class {
     return parentPath === folder || parentPath.startsWith(`${folder}/`);
   }
   async ensureFolder(folder) {
-    const segments = (0, import_obsidian16.normalizePath)(folder).split("/").filter(Boolean);
+    const segments = (0, import_obsidian18.normalizePath)(folder).split("/").filter(Boolean);
     let current = "";
     for (const segment of segments) {
-      current = (0, import_obsidian16.normalizePath)(current ? `${current}/${segment}` : segment);
+      current = (0, import_obsidian18.normalizePath)(current ? `${current}/${segment}` : segment);
       if (!this.app.vault.getAbstractFileByPath(current)) {
         await this.app.vault.createFolder(current);
       }
     }
   }
-  async getTemplateContent(templatePath, format, date = (0, import_obsidian16.moment)()) {
+  async getTemplateContent(templatePath, format, date = (0, import_obsidian18.moment)()) {
     if (!templatePath)
       return "";
     const template = this.resolveTemplate(templatePath);
     if (!template)
       return "";
-    const title = (0, import_obsidian16.moment)(date).format(format);
+    const title = (0, import_obsidian18.moment)(date).format(format);
     const content = await this.app.vault.read(template);
-    return content.replace(/{{date}}/g, title).replace(/{{title}}/g, title).replace(/{{time}}/g, (0, import_obsidian16.moment)(date).format("HH:mm"));
+    return content.replace(/{{date}}/g, title).replace(/{{title}}/g, title).replace(/{{time}}/g, (0, import_obsidian18.moment)(date).format("HH:mm"));
   }
   resolveTemplate(templatePath) {
     const exact = this.app.vault.getAbstractFileByPath(templatePath);
-    if (exact instanceof import_obsidian16.TFile)
+    if (exact instanceof import_obsidian18.TFile)
       return exact;
     const markdown = this.app.vault.getAbstractFileByPath(`${templatePath}.md`);
-    return markdown instanceof import_obsidian16.TFile ? markdown : null;
+    return markdown instanceof import_obsidian18.TFile ? markdown : null;
   }
 };
 
 // src/daily-notes/daily-notes-modals.ts
-var import_obsidian17 = require("obsidian");
-var DailyNotesTargetModal = class extends import_obsidian17.Modal {
+var import_obsidian19 = require("obsidian");
+var DailyNotesTargetModal = class extends import_obsidian19.Modal {
   constructor(app, mode, initialValue, onSubmit) {
     super(app);
     this.mode = mode;
@@ -18754,8 +19388,8 @@ var DailyNotesTargetModal = class extends import_obsidian17.Modal {
   }
   onOpen() {
     this.titleEl.setText(this.mode === "folder" ? t("dailyNotes.modal.selectFolder") : t("dailyNotes.modal.selectTag"));
-    new import_obsidian17.Setting(this.contentEl).setName(this.mode === "folder" ? t("dailyNotes.modal.folderPath") : t("dailyNotes.modal.tag")).addText((text) => text.setPlaceholder(this.mode === "folder" ? t("dailyNotes.modal.folderPlaceholder") : t("dailyNotes.modal.tagPlaceholder")).setValue(this.value).onChange((value) => this.value = value));
-    new import_obsidian17.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.apply")).setCta().onClick(() => {
+    new import_obsidian19.Setting(this.contentEl).setName(this.mode === "folder" ? t("dailyNotes.modal.folderPath") : t("dailyNotes.modal.tag")).addText((text) => text.setPlaceholder(this.mode === "folder" ? t("dailyNotes.modal.folderPlaceholder") : t("dailyNotes.modal.tagPlaceholder")).setValue(this.value).onChange((value) => this.value = value));
+    new import_obsidian19.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.apply")).setCta().onClick(() => {
       this.close();
       this.onSubmit(this.value.trim());
     }));
@@ -18764,7 +19398,7 @@ var DailyNotesTargetModal = class extends import_obsidian17.Modal {
     this.contentEl.empty();
   }
 };
-var DailyNotesCustomRangeModal = class extends import_obsidian17.Modal {
+var DailyNotesCustomRangeModal = class extends import_obsidian19.Modal {
   constructor(app, initialValue, onSubmit) {
     super(app);
     this.onSubmit = onSubmit;
@@ -18773,9 +19407,9 @@ var DailyNotesCustomRangeModal = class extends import_obsidian17.Modal {
   }
   onOpen() {
     this.titleEl.setText(t("dailyNotes.modal.customRange"));
-    new import_obsidian17.Setting(this.contentEl).setName(t("dailyNotes.modal.startDate")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.start).onChange((value) => this.start = value));
-    new import_obsidian17.Setting(this.contentEl).setName(t("dailyNotes.modal.endDate")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.end).onChange((value) => this.end = value));
-    new import_obsidian17.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.apply")).setCta().onClick(() => {
+    new import_obsidian19.Setting(this.contentEl).setName(t("dailyNotes.modal.startDate")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.start).onChange((value) => this.start = value));
+    new import_obsidian19.Setting(this.contentEl).setName(t("dailyNotes.modal.endDate")).addText((text) => text.setPlaceholder("YYYY-MM-DD").setValue(this.end).onChange((value) => this.end = value));
+    new import_obsidian19.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.apply")).setCta().onClick(() => {
       if (!this.start || !this.end)
         return;
       this.close();
@@ -18786,20 +19420,20 @@ var DailyNotesCustomRangeModal = class extends import_obsidian17.Modal {
     this.contentEl.empty();
   }
 };
-var DailyNotesDatePickerModal = class extends import_obsidian17.Modal {
+var DailyNotesDatePickerModal = class extends import_obsidian19.Modal {
   constructor(app, initialValue, onSubmit) {
     super(app);
     this.onSubmit = onSubmit;
-    this.value = initialValue || (0, import_obsidian17.moment)().format("YYYY-MM-DD");
+    this.value = initialValue || (0, import_obsidian19.moment)().format("YYYY-MM-DD");
   }
   onOpen() {
     this.titleEl.setText(t("dailyNotes.modal.pickDailyNoteDate"));
-    new import_obsidian17.Setting(this.contentEl).setName(t("dailyNotes.modal.date")).addText((text) => {
+    new import_obsidian19.Setting(this.contentEl).setName(t("dailyNotes.modal.date")).addText((text) => {
       text.inputEl.type = "date";
       text.setValue(this.value).onChange((value) => this.value = value);
     });
-    new import_obsidian17.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.jump")).setCta().onClick(() => {
-      const date = (0, import_obsidian17.moment)(this.value, "YYYY-MM-DD", true);
+    new import_obsidian19.Setting(this.contentEl).addButton((button) => button.setButtonText(t("common.button.jump")).setCta().onClick(() => {
+      const date = (0, import_obsidian19.moment)(this.value, "YYYY-MM-DD", true);
       if (!date.isValid())
         return;
       this.close();
@@ -18859,7 +19493,7 @@ var RANGE_LABEL_KEYS = {
 function getRangeLabel(range) {
   return t(`dailyNotes.range.${RANGE_LABEL_KEYS[range]}`);
 }
-var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
+var WorkflowyDailyNotesView = class extends import_obsidian20.ItemView {
   constructor(leaf, plugin) {
     super(leaf);
     this.plugin = plugin;
@@ -18952,6 +19586,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     this.contentEl.empty();
     this.contentEl.addClass("workflowy-daily-notes-container");
     this.applyTheme();
+    this.syncReadableLineWidth();
     this.addAction("palette", t("dailyNotes.action.switchTheme"), (event) => void this.openThemeMenu(event));
     this.addAction("calendar-plus", t("dailyNotes.action.createTodayNote"), () => void this.createTodayNoteFromToolbar());
     this.addAction("calendar-days", t("dailyNotes.action.pickDate"), () => this.openDatePickerModal());
@@ -18961,6 +19596,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     this.addAction("refresh-cw", t("dailyNotes.action.refresh"), () => this.refresh());
     this.renderShell();
     this.scheduleLeafHeaderTitleSync();
+    this.registerReadableLineWidthEvents();
     this.registerSubpathNavigationEvents();
     this.refresh();
     void this.processPendingNavigation();
@@ -19072,17 +19708,17 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     });
   }
   async createTodayNoteFromToolbar() {
-    await this.createOrRevealDailyNote((0, import_obsidian18.moment)(), {
+    await this.createOrRevealDailyNote((0, import_obsidian20.moment)(), {
       createFailure: t("dailyNotes.notice.createTodayFailure"),
       operationFailure: t("dailyNotes.notice.operateTodayFailure"),
       outsideScope: t("dailyNotes.notice.todayOutsideScope")
     });
   }
   openDatePickerModal() {
-    new DailyNotesDatePickerModal(this.app, (0, import_obsidian18.moment)().format("YYYY-MM-DD"), (value) => {
-      const date = (0, import_obsidian18.moment)(value, "YYYY-MM-DD", true);
+    new DailyNotesDatePickerModal(this.app, (0, import_obsidian20.moment)().format("YYYY-MM-DD"), (value) => {
+      const date = (0, import_obsidian20.moment)(value, "YYYY-MM-DD", true);
       if (!date.isValid()) {
-        new import_obsidian18.Notice(t("dailyNotes.notice.invalidDate"));
+        new import_obsidian20.Notice(t("dailyNotes.notice.invalidDate"));
         return;
       }
       void this.createOrRevealDailyNote(date, {
@@ -19094,26 +19730,26 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
   }
   async createOrRevealDailyNote(date, messages) {
     try {
-      const targetDate = (0, import_obsidian18.moment)(date).startOf("day");
+      const targetDate = (0, import_obsidian20.moment)(date).startOf("day");
       if (!targetDate.isValid()) {
-        new import_obsidian18.Notice(t("dailyNotes.notice.invalidDate"));
+        new import_obsidian20.Notice(t("dailyNotes.notice.invalidDate"));
         return;
       }
       this.ensureDailyNotesSourceMode();
       const file = await this.fileService.createDailyNoteForDate(targetDate);
       if (!file) {
-        new import_obsidian18.Notice(messages.createFailure);
+        new import_obsidian20.Notice(messages.createFailure);
         return;
       }
       this.ensureFileVisibleInAggregation(file.path);
       this.refreshWithFullRender(this.fileService.getFilesIncluding(file));
       const handled = await this.revealFileSection(file.path);
       if (!handled) {
-        new import_obsidian18.Notice(messages.outsideScope);
+        new import_obsidian20.Notice(messages.outsideScope);
       }
     } catch (error) {
       console.error("[WorkflowyDailyNotesView] Failed to create or reveal daily note:", error);
-      new import_obsidian18.Notice(messages.operationFailure);
+      new import_obsidian20.Notice(messages.operationFailure);
     }
   }
   ensureDailyNotesSourceMode() {
@@ -19370,7 +20006,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     return await command(section);
   }
   openSortMenu(event) {
-    const menu = new import_obsidian18.Menu();
+    const menu = new import_obsidian20.Menu();
     TIME_FIELD_KEYS.forEach((field) => {
       menu.addItem((item) => item.setTitle(getTimeFieldLabel(field)).setChecked(this.state.timeField === field).onClick(() => this.updateState({ timeField: field })));
     });
@@ -19378,7 +20014,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
   }
   openThemeMenu(event) {
     const currentTheme = this.plugin.settings.dailyNotes.theme || "default";
-    const menu = new import_obsidian18.Menu();
+    const menu = new import_obsidian20.Menu();
     getThemes().forEach((theme) => {
       menu.addItem((item) => item.setTitle(theme.name).setChecked(theme.id === currentTheme).onClick(() => void this.selectTheme(theme.id)));
     });
@@ -19391,7 +20027,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     this.sections.forEach((section) => section.refreshTheme());
   }
   openSourceMenu(event) {
-    const menu = new import_obsidian18.Menu();
+    const menu = new import_obsidian20.Menu();
     menu.addItem((item) => item.setTitle("Daily Notes").setChecked(this.state.selectionMode === "daily").onClick(() => this.updateState({ selectionMode: "daily", target: "" })));
     menu.addItem((item) => item.setTitle(t("dailyNotes.source.folderMenu")).onClick(() => this.openTargetModal("folder")));
     menu.addItem((item) => item.setTitle(t("dailyNotes.source.tagMenu")).onClick(() => this.openTargetModal("tag")));
@@ -19408,7 +20044,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
     menu.showAtMouseEvent(event);
   }
   openRangeMenu(event) {
-    const menu = new import_obsidian18.Menu();
+    const menu = new import_obsidian20.Menu();
     RANGE_KEYS.forEach((range) => {
       menu.addItem((item) => item.setTitle(getRangeLabel(range)).setChecked(this.state.selectedRange === range).onClick(() => range === "custom" ? this.openCustomRangeModal() : this.updateState({ selectedRange: range })));
     });
@@ -19455,6 +20091,29 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
       getThemes().forEach((theme) => container.removeClass(`workflowy-theme-${theme.id}`));
     });
   }
+  registerReadableLineWidthEvents() {
+    const vaultEvents = this.app.vault;
+    if (typeof (vaultEvents == null ? void 0 : vaultEvents.on) === "function") {
+      this.registerEvent(
+        vaultEvents.on("config-changed", (key) => {
+          if (shouldSyncReadableLineWidth(key))
+            this.syncReadableLineWidth();
+        })
+      );
+    }
+    this.registerEvent(
+      this.app.workspace.on("css-change", () => this.syncReadableLineWidth())
+    );
+  }
+  syncReadableLineWidth() {
+    syncReadableLineWidthClass(this.contentEl, this.app);
+    this.contentEl.querySelectorAll(".workflowy-daily-note-section").forEach((section) => {
+      syncReadableLineWidthClass(section, this.app);
+    });
+    this.contentEl.querySelectorAll(".workflowy-container").forEach((container) => {
+      syncReadableLineWidthClass(container, this.app);
+    });
+  }
   getThemeContainers() {
     const containers = [
       this.contentEl,
@@ -19471,7 +20130,7 @@ var WorkflowyDailyNotesView = class extends import_obsidian18.ItemView {
 };
 
 // src/main.ts
-var WorkflowyPlugin = class extends import_obsidian19.Plugin {
+var WorkflowyPlugin = class extends import_obsidian21.Plugin {
   constructor() {
     super(...arguments);
     // 平台信息
@@ -19517,8 +20176,8 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
    * 检测平台
    */
   detectPlatform() {
-    this.isMobile = import_obsidian19.Platform.isMobile;
-    this.isDesktop = import_obsidian19.Platform.isDesktop;
+    this.isMobile = import_obsidian21.Platform.isMobile;
+    this.isDesktop = import_obsidian21.Platform.isDesktop;
   }
   /**
    * 初始化隔离系统
@@ -19761,7 +20420,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
     this.settings.thino.autoTimestamp = !this.settings.thino.autoTimestamp;
     this.saveSettings();
     const status = this.settings.thino.autoTimestamp ? t("commands.notice.timestampStatusOn") : t("commands.notice.timestampStatusOff");
-    new import_obsidian19.Notice(t("commands.notice.timestampToggled", { status }));
+    new import_obsidian21.Notice(t("commands.notice.timestampToggled", { status }));
   }
   /**
    * 切换渲染模式（源码模式 ↔ Live Preview 模式）
@@ -19798,26 +20457,26 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
     );
     this.registerEvent(
       this.app.vault.on("modify", (file) => {
-        if (file instanceof import_obsidian19.TFile && file.extension === "md") {
+        if (file instanceof import_obsidian21.TFile && file.extension === "md") {
           this.notifyWorkflowyViewsOfFileChange(file);
         }
       })
     );
     this.registerEvent(this.app.vault.on("create", (file) => {
-      if (file instanceof import_obsidian19.TFile)
+      if (file instanceof import_obsidian21.TFile)
         this.refreshDailyNotesViews();
     }));
     this.registerEvent(this.app.vault.on("delete", (file) => {
-      if (file instanceof import_obsidian19.TFile)
+      if (file instanceof import_obsidian21.TFile)
         this.refreshDailyNotesViews();
     }));
     this.registerEvent(this.app.vault.on("rename", (file) => {
-      if (file instanceof import_obsidian19.TFile)
+      if (file instanceof import_obsidian21.TFile)
         this.refreshDailyNotesViews();
     }));
-    const debouncedTagRefresh = (0, import_obsidian19.debounce)(() => this.refreshDailyNotesViews("tag"), 500, true);
+    const debouncedTagRefresh = (0, import_obsidian21.debounce)(() => this.refreshDailyNotesViews("tag"), 500, true);
     this.registerEvent(this.app.metadataCache.on("changed", (file) => {
-      if (file instanceof import_obsidian19.TFile)
+      if (file instanceof import_obsidian21.TFile)
         debouncedTagRefresh();
     }));
   }
@@ -19839,11 +20498,11 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
    * 添加文件菜单项（带隔离检查）
    */
   addFileMenuItems(menu, file) {
-    if (file instanceof import_obsidian19.TFolder) {
+    if (file instanceof import_obsidian21.TFolder) {
       this.addFolderMenuItems(menu, file);
       return;
     }
-    if (!(file instanceof import_obsidian19.TFile))
+    if (!(file instanceof import_obsidian21.TFile))
       return;
     if (file.extension !== "md")
       return;
@@ -19903,7 +20562,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
       console.warn("[WorkflowyPlugin] Can only open as Workflowy from Markdown view");
       return;
     }
-    const markdownView = leaf.view instanceof import_obsidian19.MarkdownView ? leaf.view : null;
+    const markdownView = leaf.view instanceof import_obsidian21.MarkdownView ? leaf.view : null;
     const cursor = markdownView == null ? void 0 : markdownView.editor.getCursor();
     await leaf.setViewState({
       type: WORKFLOWY_VIEW_TYPE,
@@ -19924,7 +20583,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
     this.app.workspace.revealLeaf(leaf);
     await new Promise((resolve2) => window.requestAnimationFrame(() => resolve2()));
     await new Promise((resolve2) => window.setTimeout(resolve2, 0));
-    if (!(leaf.view instanceof import_obsidian19.MarkdownView))
+    if (!(leaf.view instanceof import_obsidian21.MarkdownView))
       return;
     if (sourceCursor) {
       const position = { line: sourceCursor.line, ch: sourceCursor.ch };
@@ -19992,7 +20651,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
       return false;
     }
     if (!licenseInfo.isPlusUser && licenseInfo.trialDaysLeft > 0) {
-      new import_obsidian19.Notice(t("commands.notice.trialRemaining", { days: licenseInfo.trialDaysLeft }), 5e3);
+      new import_obsidian21.Notice(t("commands.notice.trialRemaining", { days: licenseInfo.trialDaysLeft }), 5e3);
     }
     return true;
   }
@@ -20008,7 +20667,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
       this.app.workspace.revealLeaf(leaf);
     } catch (error) {
       console.error("[WorkflowyPlugin] Failed to open Daily Notes view:", error);
-      new import_obsidian19.Notice(t("commands.notice.openDailyNotesFailed"));
+      new import_obsidian21.Notice(t("commands.notice.openDailyNotesFailed"));
     }
   }
   /**
@@ -20032,7 +20691,7 @@ var WorkflowyPlugin = class extends import_obsidian19.Plugin {
       this.app.workspace.revealLeaf(leaf);
     } catch (error) {
       console.error("[WorkflowyPlugin] Failed to open folder outline view:", error);
-      new import_obsidian19.Notice(t("commands.notice.openFolderOutlineFailed"));
+      new import_obsidian21.Notice(t("commands.notice.openFolderOutlineFailed"));
     }
   }
   /**

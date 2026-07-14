@@ -170,6 +170,14 @@
     min-height: 400px;
 }
 
+.workflowy-container.is-readable-line-width > .workflowy-navigation-header,
+.workflowy-container.is-readable-line-width > .workflowy-editor {
+    box-sizing: border-box;
+    margin-inline: auto;
+    max-width: var(--file-line-width, 700px);
+    width: 100%;
+}
+
 .workflowy-container .workflowy-item {
     position: relative;
     margin: 0;
@@ -612,6 +620,7 @@
         font-size: var(--font-text-size);
         padding: 6px 8px;
     }
+
 }
 
 /* 多选功能样式 */
@@ -637,6 +646,22 @@
 
 .workflowy-container .workflowy-item.workflowy-selected .workflowy-content {
     background: rgba(66, 165, 245, 0.08);
+}
+
+.workflowy-container .workflowy-item.workflowy-selected .workflowy-content-display,
+.workflowy-container .workflowy-item.workflowy-selected .workflowy-content-editor {
+    background: rgba(66, 165, 245, 0.08);
+    border-radius: 3px;
+}
+
+.workflowy-container.selecting {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.workflowy-container.selecting .workflowy-content-editor {
+    user-select: none;
+    caret-color: transparent;
 }
 
 /* 多选拖拽状态 */
@@ -5138,6 +5163,25 @@
     height: 100%;
     overflow-y: auto;
     padding: var(--size-4-2) var(--size-4-4);
+}
+
+.workflowy-daily-notes-container.is-readable-line-width .workflowy-daily-notes-list {
+    box-sizing: border-box;
+    margin-inline: auto;
+    max-width: var(--file-line-width, 700px);
+    width: 100%;
+}
+
+.workflowy-daily-notes-container.is-readable-line-width .workflowy-daily-note-section.is-readable-line-width > .workflowy-daily-note-header,
+.workflowy-daily-notes-container.is-readable-line-width .workflowy-daily-note-section.is-readable-line-width > .workflowy-daily-note-editor {
+    box-sizing: border-box;
+    margin-inline: auto;
+    max-width: var(--file-line-width, 700px);
+    width: 100%;
+}
+
+.workflowy-daily-notes-container.is-readable-line-width .workflowy-daily-note-section.is-readable-line-width > .workflowy-daily-note-editor > .workflowy-container {
+    padding-inline: 0;
 }
 
 .workflowy-daily-notes-themed-shell.workflowy-theme-classic-white {
