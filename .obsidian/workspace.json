@@ -27,12 +27,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "工作/小说/小说章节/第一千零一百四十九章——.md",
+                "file": "工作/小说/小说章节/第一千零一百四十九章——麻烦大了…….md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "第一千零一百四十九章——"
+              "title": "第一千零一百四十九章——麻烦大了……"
+            }
+          },
+          {
+            "id": "0afa9f47a1235bfc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "工作/小说/小说章节/第一千零一百五十章——.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "第一千零一百五十章——"
             }
           },
           {
@@ -106,7 +120,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -333,12 +347,12 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "f54c48750eff8c96",
+  "active": "0afa9f47a1235bfc",
   "lastOpenFiles": [
+    "工作/小说/小说章节/第一千零一百四十九章——麻烦大了…….md",
     "工作/小说/小说相关信息/教团/贪婪的计划.md",
-    "工作/小说/小说章节/第一千零一百四十九章——.md",
     "工作/小说/小说章节/第一千零一百四十八章——异样感…….md",
-    "工作/小说/小说章节/第一千零一百四十七章——你开智了！？.md",
+    "工作/小说/小说章节/第一千零一百五十章——.md",
     "工作/小说/小说相关信息/教团杀手.md",
     "工作/小说/小说相关信息/教团/七罪.md",
     "工作/小说/小说相关信息/宝物.md",
