@@ -202,7 +202,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 246.5
+    "width": 254.5
   },
   "right": {
     "id": "9dcd3d4097e41532",
@@ -324,7 +324,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 245.5
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -347,7 +347,7 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "cc8d023c78fc29df",
+  "active": "0afa9f47a1235bfc",
   "lastOpenFiles": [
     "工作/小说/新章校对报告_148-149章.md",
     "工作/小说/第一千零一百五十章_写作思路梳理.md",
