@@ -194,8 +194,8 @@
             "state": {
               "type": "recent-files",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "recent-files"
+              "icon": "clock",
+              "title": "Recent files"
             }
           }
         ]
@@ -347,8 +347,9 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "2f4d640369d72fb4",
+  "active": "cc8d023c78fc29df",
   "lastOpenFiles": [
+    "工作/简历",
     "工作/小说/禁咒恶魔_深度分析（作者设定修订版）.md",
     "工作/小说/小说章节/第一千零一百六十八章——.md",
     "工作/小说/新章校对报告_148-149章.md",
@@ -375,7 +376,6 @@
     "灵感/突发的灵感（fps）篇.md",
     "工作/小说/小说.md",
     "工作/小说/小说相关信息/配角.md",
-    "工作/小说/小说相关信息/教团/教团.md",
     "工作/小说/小说相关信息/教团/未命名",
     "工作/小说/小说相关信息/教团",
     "日常/诗/李白",

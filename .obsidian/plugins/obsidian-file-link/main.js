@@ -34,6 +34,7 @@ const DEFAULT_SETTINGS = {
     linkPrefix: "",
     showFileEnding: false,
     linkFolder: false,
+    useFolderName: false,
     embedFile: false,
 };
 const SUPPORTED_EMBED_FILE_TYPES = [
@@ -98,6 +99,15 @@ class FileLinkSettingTab extends obsidian.PluginSettingTab {
             .setDesc("Link will open the folder where the file is located instead of opening the file itself.")
             .addToggle((toggle) => toggle.setValue(this.plugin.settings.linkFolder).onChange(async () => {
             this.plugin.settings.linkFolder = toggle.getValue();
+            await this.plugin.saveSettings();
+        }));
+        new obsidian.Setting(containerEl)
+            .setName("Use folder name")
+            .setDesc('When linking to a folder, show only the folder name instead of the full path (e.g. "baz" instead of "/Users/foo/bar/baz").')
+            .addToggle((toggle) => toggle
+            .setValue(this.plugin.settings.useFolderName)
+            .onChange(async () => {
+            this.plugin.settings.useFolderName = toggle.getValue();
             await this.plugin.saveSettings();
         }));
     }
@@ -889,7 +899,9 @@ class FileEmbeder {
         const prefix = printPrefix ? this.settings.linkPrefix : "";
         let linkText = pathInfo.name;
         if (this.settings.linkFolder) {
-            linkText = pathInfo.dir;
+            linkText = this.settings.useFolderName
+                ? path__namespace.basename(pathInfo.dir)
+                : pathInfo.dir;
         }
         if (this.settings.showFileEnding) {
             linkText = pathInfo.filename;
@@ -955,6 +967,7 @@ class FileLinkModal extends obsidian.Modal {
         };
         const checkboxEmbed = createCheckboxGroup("embed", "Embed file", this.plugin.settings.embedFile);
         const checkboxFileFolder = createCheckboxGroup("file-folder", "Link folder", this.plugin.settings.linkFolder);
+        const checkboxFolderName = createCheckboxGroup("folder-name", "Use folder name", this.plugin.settings.useFolderName);
         const checkboxFileEnding = createCheckboxGroup("file-ending", "Show file extension", this.plugin.settings.showFileEnding);
         const buttonContainer = mainContainer.createEl("div", {
             cls: "button-container",
@@ -965,6 +978,12 @@ class FileLinkModal extends obsidian.Modal {
         const submitButton = buttonContainer.createEl("button", {
             text: "Add file link",
             cls: "mod-cta",
+        });
+        contentEl.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                submitButton.click();
+            }
         });
         fileButton.addEventListener("click", async () => {
             try {
@@ -985,6 +1004,7 @@ class FileLinkModal extends obsidian.Modal {
             if (this.filePaths.length > 0) {
                 // Update settings
                 this.plugin.settings.linkFolder = checkboxFileFolder.checked;
+                this.plugin.settings.useFolderName = checkboxFolderName.checked;
                 this.plugin.settings.showFileEnding = checkboxFileEnding.checked;
                 this.plugin.settings.embedFile = checkboxEmbed.checked;
                 const fe = new FileEmbeder(this.plugin.settings);
