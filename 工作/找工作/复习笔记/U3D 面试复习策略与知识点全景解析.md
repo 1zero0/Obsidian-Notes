@@ -20,3 +20,8 @@ P0 最高 简历项目核心技术 L3+L4 面试必点，点就点深的
 P1 高 面试高频考点      L2—L3 几乎每场面试都涉及
 P2 中 基础知识体系      L2    保证基础面试不丢分
 P3 低 了解即可         L1     知道即可，不深挖
+# 高度
+H1：what ：Unity有Animator系统，可以播放动画
+H2：Why  ：Animator用状态机管理动画切换，因为角色状态多且转换条件复杂，状态机能清晰表达规则
+H3：How  ：角色用Animator Controller，怪物用直接播放AnimationClip（状态开销不值得）UI用DOTween（更轻量）
+H4：Trade-off：综合考虑团队规模、项目类型、性能预算。大型RPG用Animator+PlayAble做自定义混合，休闲游戏简化为代码驱动状态机
