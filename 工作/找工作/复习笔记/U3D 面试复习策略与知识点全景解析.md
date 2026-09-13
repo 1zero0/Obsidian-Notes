@@ -29,3 +29,8 @@ H4：Trade-off：综合考虑团队规模、项目类型、性能预算。大型
 1. 主动给对比
 2. 主动谈取舍
 3. 主动升维度
+# STAR法则
+S：Situation 这是什么？
+T：Task      负责什么？
+A：Action    怎么做的？
+R：Result
