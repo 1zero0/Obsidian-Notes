@@ -33,4 +33,4 @@ H4：Trade-off：综合考虑团队规模、项目类型、性能预算。大型
 S：Situation 这是什么？
 T：Task      负责什么？
 A：Action    怎么做的？
-R：Result
+R：Result    味道如何？
