@@ -25,3 +25,5 @@ H1：what ：Unity有Animator系统，可以播放动画
 H2：Why  ：Animator用状态机管理动画切换，因为角色状态多且转换条件复杂，状态机能清晰表达规则
 H3：How  ：角色用Animator Controller，怪物用直接播放AnimationClip（状态开销不值得）UI用DOTween（更轻量）
 H4：Trade-off：综合考虑团队规模、项目类型、性能预算。大型RPG用Animator+PlayAble做自定义混合，休闲游戏简化为代码驱动状态机
+# 如何在面试中体现境界
+1. 
