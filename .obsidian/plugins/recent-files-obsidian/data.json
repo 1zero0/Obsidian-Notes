@@ -1,6 +1,10 @@
 {
   "recentFiles": [
     {
+      "basename": "10.19",
+      "path": "培训日报/笔记/10.19.md"
+    },
+    {
       "basename": "10.18",
       "path": "培训日报/笔记/10.18.md"
     },
@@ -195,10 +199,6 @@
     {
       "basename": "callout语法用法",
       "path": "日常/笔记/callout/callout语法用法.md"
-    },
-    {
-      "basename": "会议",
-      "path": "工作/第四领域/会议.md"
     }
   ],
   "omittedPaths": [],
