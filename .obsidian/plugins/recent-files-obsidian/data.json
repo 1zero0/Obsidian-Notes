@@ -5,6 +5,10 @@
       "path": "培训日报/笔记/10.20.md"
     },
     {
+      "basename": "猎杀对决",
+      "path": "游戏/猎杀对决意见/猎杀对决.md"
+    },
+    {
       "basename": "10.15（需求分析怎么做？）",
       "path": "培训日报/笔记/10.15（需求分析怎么做？）.md"
     },
@@ -195,10 +199,6 @@
     {
       "basename": "Obsidian插件链接",
       "path": "学习/Obsidian/Obsidian插件链接.md"
-    },
-    {
-      "basename": "Dataview使用",
-      "path": "学习/Obsidian/Dataview使用.md"
     }
   ],
   "omittedPaths": [],
