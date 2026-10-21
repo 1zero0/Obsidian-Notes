@@ -1,8 +1,12 @@
 {
   "recentFiles": [
     {
-      "basename": "10.20",
-      "path": "培训日报/笔记/10.20.md"
+      "basename": "10.21",
+      "path": "培训日报/笔记/10.21.md"
+    },
+    {
+      "basename": "10.20测试用例的编写",
+      "path": "培训日报/笔记/10.20测试用例的编写.md"
     },
     {
       "basename": "第一千零一百七十六章——",
@@ -195,10 +199,6 @@
     {
       "basename": "如何写作",
       "path": "学习/剧本杀/如何写一个剧本杀/如何写作.md"
-    },
-    {
-      "basename": "Obsidian插件链接",
-      "path": "学习/Obsidian/Obsidian插件链接.md"
     }
   ],
   "omittedPaths": [],
