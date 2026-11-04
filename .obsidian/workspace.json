@@ -92,7 +92,7 @@
             }
           }
         ],
-        "currentTab": 5
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -319,10 +319,12 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "fe253ce343227080",
+  "active": "771f119f675da2bb",
   "lastOpenFiles": [
-    "培训日报/笔记/11.3AI怎么测？.md",
+    "工作/小说/小说章节/第一千零一百七十四章——你受伤了我就不应该心疼呗。.md",
+    "工作/小说/小说章节/第一千零一百七十五——又成了一对！.md",
     "培训日报/笔记/11.4.md",
+    "培训日报/笔记/11.3AI怎么测？.md",
     "培训日报/培训专用测试点文件夹/原神公子副本/通用副本.xmind",
     "培训日报/培训专用测试点文件夹/原神公子副本/公子测试点-除技能.xmind",
     "培训日报/笔记/10.28皮肤怎么测.md",
@@ -355,8 +357,6 @@
     "2026-10-23.md",
     "随笔/收集的句子.md",
     "学习/Obsidian/Obsidian插件链接.md",
-    "学习/Obsidian/Dataview使用.md",
-    "学习/插件用法/插件用法/插件用法.md",
     "Excalidraw/未命名.canvas",
     "工作/第四领域/游玩指南/photo/Pasted image 20251030143614.png",
     "未命名.canvas"
