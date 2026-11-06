@@ -97,12 +97,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "培训日报/笔记/10.14 了解游戏行业的相关知识.md",
+                "file": "培训日报/笔记/10.14 游戏测试的工作.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "10.14 了解游戏行业的相关知识"
+              "title": "10.14 游戏测试的工作"
             }
           },
           {
@@ -120,7 +120,7 @@
             }
           }
         ],
-        "currentTab": 6
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -347,10 +347,10 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "a11a2510b33e4704",
+  "active": "fe253ce343227080",
   "lastOpenFiles": [
+    "培训日报/笔记/10.14 游戏测试的工作.md",
     "培训日报/笔记/11.6测试报告.md",
-    "培训日报/笔记/10.14 了解游戏行业的相关知识.md",
     "培训日报/笔记/10.15需求分析怎么做？.md",
     "培训日报/笔记/11.4Bug.md",
     "培训日报/笔记/11.5日志.md",
