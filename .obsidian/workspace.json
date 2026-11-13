@@ -125,12 +125,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "培训日报/笔记/11.13.md",
+                "file": "培训日报/笔记/11.13工作流程.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "11.13"
+              "title": "11.13工作流程"
             }
           }
         ],
@@ -362,10 +362,10 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "944e7ee7780c8279",
+  "active": "1a711655ddc1d1a1",
   "lastOpenFiles": [
     "培训日报/笔记/11.12.md",
-    "培训日报/笔记/11.13.md",
+    "培训日报/笔记/11.13工作流程.md",
     "培训日报/笔记/10.15需求分析怎么做？.md",
     "培训日报/笔记/11.6测试报告.md",
     "培训日报/笔记/10.14 游戏测试的工作.md",
