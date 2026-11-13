@@ -181,7 +181,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "复盘",
+                "query": "热更",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -212,7 +212,8 @@
               "title": "Recent files"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -361,7 +362,7 @@
       "obsidian-workflowy-plugin:打开 Daily Notes 大纲视图": false
     }
   },
-  "active": "1a711655ddc1d1a1",
+  "active": "944e7ee7780c8279",
   "lastOpenFiles": [
     "培训日报/笔记/11.12.md",
     "培训日报/笔记/11.13.md",
